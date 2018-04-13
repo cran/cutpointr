@@ -1,6 +1,6 @@
-f2630fa2e9a66b4a315726d011dbeec1 *DESCRIPTION
+40a5ee6e4dcb451e64998c30270e11ae *DESCRIPTION
 6e50b8ee900e149e50306b57ccd50ef3 *NAMESPACE
-6bf35c68d8be7341e352fbcb9f80151b *NEWS.md
+c6135896a06a1bf62574666dd9c0d397 *NEWS.md
 0c6ed7a4693fdb0efe1de3d59d695d19 *R/RcppExports.R
 69735bdc6c058394bcf7ceb28076cb8d *R/cutpointr.R
 ceaa220575f29dd0fbcc1b287f526d5c *R/data.R
@@ -28,12 +28,12 @@ f85fc5d33171e2a70ef134887c73084f *R/print.cutpointr.R
 db638ca06663ab69bdad441da129a919 *R/print.summary_cutpointr.R
 9113647e27cb8093ad84dd715c9e617e *R/roc.R
 b2145a7310fcb0622c843eaaf5b061fc *R/summary.cutpointr.R
-e774dac99d0b533a77ae1cc0b8117c1b *R/utils.R
+f56bec25536598805ed1eee45aa09495 *R/utils.R
 69cbcc01229e611573d50cabaad4d1c7 *build/vignette.rds
 c5858b95c390466fe85b7e996d88c0f0 *data/suicide.rda
 484890ec0bcaba4d98fec0f7af2327c8 *inst/doc/cutpointr.R
 ce035275f3b97c6a7e1ba331f02d47e5 *inst/doc/cutpointr.Rmd
-3e09626e15ade33750b41b09af0cbfbb *inst/doc/cutpointr.html
+7453b054e7b336d74337962789aea47c *inst/doc/cutpointr.html
 6b70ebd87efe72cdd6b7049fef6f947e *inst/doc/figure-html/unnamed-chunk-10-1.png
 127d2494e7ca5228bdf453bc7a6db280 *inst/doc/figure-html/unnamed-chunk-12-1.png
 14bebe255701e7bdd73d333a3ce43006 *inst/doc/figure-html/unnamed-chunk-15-1.png
@@ -119,6 +119,6 @@ b95fdd80a9b3c0e1147dae38ce725f33 *src/is_equal_cpp.cpp
 83f74134d6bf7e4524a80f1f9453fbe5 *src/one_unique.cpp
 6e0cada596ec84d20e96a4e11df04f89 *src/which.cpp
 c0d0c032120604a9b78789cc46197ccc *tests/testthat.R
-375e722dd55ccb6b6bbe3b0d5cdd365c *tests/testthat/Rplots.pdf
-393eed9e009cf4b0edc88a6d8bc5a39e *tests/testthat/test-cutpointr.R
+cf6b6e14cedea02b489e7c10de4d928f *tests/testthat/Rplots.pdf
+b0e8a186b0d3fd566f8b85ccc9899b0c *tests/testthat/test-cutpointr.R
 ce035275f3b97c6a7e1ba331f02d47e5 *vignettes/cutpointr.Rmd
