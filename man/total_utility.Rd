@@ -4,8 +4,8 @@
 \alias{total_utility}
 \title{Calculate the total utility}
 \usage{
-total_utility(tp, fp, tn, fn, utility_tp = 1, utility_tn = 1, cost_fp = 1,
-  cost_fn = 1, ...)
+total_utility(tp, fp, tn, fn, utility_tp = 1, utility_tn = 1,
+  cost_fp = 1, cost_fn = 1, ...)
 }
 \arguments{
 \item{tp}{(numeric) number of true positives.}
@@ -48,8 +48,9 @@ Other metric functions: \code{\link{F1_score}},
   \code{\link{plr}}, \code{\link{ppv}},
   \code{\link{precision}}, \code{\link{prod_ppv_npv}},
   \code{\link{prod_sens_spec}}, \code{\link{recall}},
-  \code{\link{risk_ratio}}, \code{\link{sensitivity}},
-  \code{\link{specificity}}, \code{\link{sum_ppv_npv}},
-  \code{\link{sum_sens_spec}}, \code{\link{tpr}},
-  \code{\link{tp}}, \code{\link{youden}}
+  \code{\link{risk_ratio}}, \code{\link{roc01}},
+  \code{\link{sensitivity}}, \code{\link{specificity}},
+  \code{\link{sum_ppv_npv}}, \code{\link{sum_sens_spec}},
+  \code{\link{tpr}}, \code{\link{tp}}, \code{\link{youden}}
 }
+\concept{metric functions}
