@@ -1,3 +1,27 @@
+# cutpointr 0.7.6
+- Let `roc()` return a tibble instead of a data.frame
+- Printing results of `roc()` is now possible with `plot_roc()`
+- Extra metric columns can now be added to a `roc_cutpointr` object with `add_metric()`
+- Add prostate_nodal data set of nodal involvement and acid phosphatase levels
+in 53 prostate cancer patients
+- Fix fetching of method name if method was called using `::` or `:::`
+- Make test of summary printing more tolerant after problems with `tidyr` 0.8.3
+- Issue an error if plot is used on a `multi_cutpointr` object
+- Add a summary method for `multi_cutpointr`, a corresponding 
+`summary_multi_cutpointr` class and a printing method for that class
+- The column `variable` is not returned anymore by `multi_cutpointr`, because
+it is identical to `predictor`
+- Run `multi_cutpointr` only on all numeric columns, if `x = NULL`
+
+# cutpointr 0.7.5
+- Add constrainable metrics, e.g. sens_constrain to calculate sensitivity given
+a minimum value for specificity
+- Fix a bug where dot-arguments were not passed to the metric function in
+cutpointr_internal
+- Add a check to ensure that the metric function does not return only missing
+values
+- Replace (fix) ">" by ">=" in the documentation of `cutpointr()`.
+
 # cutpointr 0.7.4
 - Add `sigfig` argument to `print.cutpointr` to allow for specifying the number of
 significant digits to be printed

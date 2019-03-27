@@ -60,6 +60,17 @@ check_metric_name <- function(met) {
     }
 }
 
+check_method_name <- function(mod_name) {
+    if (length(mod_name) > 1) {
+        if (mod_name[1] %in% c("::", ":::") & length(mod_name) == 3) {
+            mod_name <- mod_name[3]
+        } else {
+            stop("Could not parse method name")
+        }
+    }
+    return(mod_name)
+}
+
 check_colnames <- function(cutpointr_object) {
     if ("subgroup" %in% colnames(cutpointr_object)) col_nr <- 4 else col_nr <- 3
     metric_name <- colnames(cutpointr_object)[col_nr]
@@ -114,6 +125,12 @@ get_fnth <- function(x, n = 1) {
         return(x[n])
     }
     stop("no conditions apply in get_fnth")
+}
+
+get_numeric_cols <- function(x, class_col) {
+    cols <- colnames(x)[unlist(lapply(x, is.numeric))]
+    cols <- cols[cols != class_col]
+    cols
 }
 
 midpoint <- function(oc, x, direction) {
@@ -268,20 +285,52 @@ prepare_bind_rows <- function(x) {
 
 # Draw a bootstrap sample from a data frame. Draw again, if the sampled or
 # unsampled observations contain only one class.
-simple_boot <- function(data, dep_var) {
-    draw_again <- TRUE
-    i <- 1
-    while (draw_again) {
-        b_ind <- sample(1:nrow(data), size = nrow(data), replace = TRUE)
-        if (only_one_unique(unlist(data[b_ind, dep_var])) |
-            only_one_unique(unlist(data[-b_ind, dep_var]))) {
-            draw_again <- TRUE
-            i <- i + 1
-            if (i >= 100) stop(paste("No sets including both classes drawn in",
-                                     "bootstrap after 100 tries."))
-        } else {
-            draw_again <- FALSE
+# simple_boot <- function(data, dep_var) {
+#     draw_again <- TRUE
+#     i <- 1
+#     while (draw_again) {
+#         b_ind <- sample(1:nrow(data), size = nrow(data), replace = TRUE)
+#         if (only_one_unique(unlist(data[b_ind, dep_var])) |
+#             only_one_unique(unlist(data[-b_ind, dep_var]))) {
+#             draw_again <- TRUE
+#             i <- i + 1
+#             if (i >= 100) stop(paste("No sets including both classes drawn in",
+#                                      "bootstrap after 100 tries."))
+#         } else {
+#             draw_again <- FALSE
+#         }
+#     }
+#     return(b_ind)
+# }
+
+# Return indices for observations based on nonparametric bootstrap per class.
+# If not per_class, draw a bootstrap sample and draw again, if the sampled or
+# observations contain only one class. Preliminary tests suggested that
+# per_class = FALSE leads to better confidence intervals.
+simple_boot <- function(ind_pos = NULL, ind_neg = NULL,
+                        data = NULL, dep_var = NULL,
+                        per_class = FALSE) {
+    if (per_class) {
+        b_ind_pos <- sample(ind_pos, size = length(ind_pos), replace = TRUE)
+        b_ind_neg <- sample(ind_neg, size = length(ind_neg), replace = TRUE)
+        return(c(b_ind_pos, b_ind_neg))
+    } else {
+        draw_again <- TRUE
+        i <- 1
+        while (draw_again) {
+            b_ind <- sample(1:nrow(data), size = nrow(data), replace = TRUE)
+            if (only_one_unique(unlist(data[b_ind, dep_var])) |
+                only_one_unique(unlist(data[-b_ind, dep_var]))) {
+                draw_again <- TRUE
+                i <- i + 1
+                if (i >= 100) stop(paste("No sets including both classes drawn in",
+                                         "bootstrap after 100 tries."))
+            } else {
+                draw_again <- FALSE
+            }
         }
+        return(b_ind)
     }
-    return(b_ind)
 }
+
+

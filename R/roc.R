@@ -8,7 +8,8 @@
 #' true negative rate (tnr) and false negative rate (fnr) are returned.
 #'
 #' To enable classifying all observations as belonging to only one class the
-#' predictor values will be augmented by Inf or -Inf.
+#' predictor values will be augmented by Inf or -Inf. The returned object can
+#' be plotted with plot_roc.
 #'
 #' @param data A data.frame or matrix. Will be converted to a data.frame.
 #' @param x (character) The numeric independent (predictor) variable.
@@ -24,8 +25,10 @@
 #' @examples
 #' ## First two classes of the iris data
 #' dat <- iris[1:100, ]
-#' roc(data = dat, x = "Petal.Width", class = "Species",
+#' roc_curve <- roc(data = dat, x = "Petal.Width", class = "Species",
 #' pos_class = "versicolor", neg_class = "setosa", direction = ">=")
+#' roc_curve
+#' plot_roc(roc_curve)
 #' @export
 #' @family main cutpointr functions
 #' @source
@@ -90,7 +93,8 @@ roc <- function(data, x, class, pos_class, neg_class, direction = ">=",
     tnr <- tn / n_neg
     fpr <- 1 - tnr
     fnr <- 1 - tpr
-    res <- data.frame(x.sorted, tp, fp, tn, fn, tpr, tnr, fpr, fnr)
+    # res <- data.frame(x.sorted, tp, fp, tn, fn, tpr, tnr, fpr, fnr)
+    res <- tibble::tibble(x.sorted, tp, fp, tn, fn, tpr, tnr, fpr, fnr)
     class(res) <- c(class(res), "roc_cutpointr")
     if (!silent) {
         if (is.nan(res$tpr[1])) warning("ROC curve contains no positives")

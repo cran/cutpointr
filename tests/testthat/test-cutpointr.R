@@ -99,30 +99,6 @@ test_that("Plotting with bootstrapping is silent", {
     expect_silent(plot_metric_boot(opt_cut))
     expect_silent(plot_x(opt_cut))
     expect_silent(plot_precision_recall(opt_cut))
-
-    # With subgroup
-    set.seed(123)
-    tempdat <- data.frame(x = rnorm(300),
-                          y = sample(0:1, size = 300, replace = TRUE),
-                          g = sample(0:2, size = 300, replace = TRUE))
-    opt_cut <- cutpointr(tempdat, x, y, g, boot_runs = 20)
-    expect_silent(plot(opt_cut))
-    expect_silent(plot_metric(opt_cut))
-    expect_silent(plot_roc(opt_cut))
-    expect_silent(plot_cut_boot(opt_cut))
-    expect_silent(plot_metric_boot(opt_cut))
-    expect_silent(plot_x(opt_cut))
-    expect_silent(plot_precision_recall(opt_cut))
-
-    set.seed(102)
-    opt_cut <- cutpointr(suicide, dsi, suicide, gender, method = minimize_metric,
-                         metric = abs_d_sens_spec, boot_runs = 50, silent = TRUE)
-    expect_silent(plot_cut_boot(opt_cut))
-    expect_silent(plot_metric(opt_cut, conf_lvl = 0.9))
-    expect_silent(plot_metric_boot(opt_cut))
-    expect_silent(plot_precision_recall(opt_cut))
-    expect_silent(plot_sensitivity_specificity(opt_cut))
-    expect_silent(plot_roc(opt_cut))
 })
 
 test_that("AUC calculation is correct and works with Inf and -Inf", {
@@ -135,13 +111,13 @@ test_that("AUC calculation is correct and works with Inf and -Inf", {
     expect_equal(cp$AUC, 1)
 
     set.seed(123)
-    tempdat <- data.frame(x = runif(100),
-                          y = factor(sample(0:1, size = 100, replace = TRUE)))
+    tempdat <- data.frame(x = rnorm(100),
+                          y = factor(c(rep(0, 50), rep(1, 50))))
     roc_cutpointr <- cutpointr::roc(tempdat, "x", "y", pos_class = 1, neg_class = 0)
     auc_cutpointr <- cutpointr:::auc(roc_cutpointr$tpr, roc_cutpointr$fpr)
-    expect_equal(auc_cutpointr, 0.428)
+    expect_equal(round(auc_cutpointr, 3), 0.541)
     cp <- cutpointr(tempdat, x, y, pos_class = 1, direction = ">=")
-    expect_equal(cp$AUC, 0.428)
+    expect_equal(round(cp$AUC, 3), 0.541)
 })
 
 test_that("Correct midpoints are found", {
@@ -187,7 +163,7 @@ test_that("no duplicate column names are returned", {
     expect_silent(plot(optcut))
 
     set.seed(1234)
-    tempdat <- data.frame(x = runif(100),
+    tempdat <- data.frame(x = rnorm(100),
                           y = factor(sample(0:1, size = 100, replace = TRUE)),
                           g = factor(sample(0:1, size = 100, replace = TRUE)))
     optcut <- cutpointr(tempdat, x, y, g, method = oc_youden_normal)
@@ -479,6 +455,7 @@ test_that("Results for youden are correct", {
 })
 
 test_that("Results for p_chisquared are equal to results by OptimalCutpoints", {
+    suppressWarnings(RNGversion("3.5.0"))
     set.seed(2839)
     tempdat <- data.frame(x = c(rnorm(50), rnorm(50, mean = 1)) ,
                           y = c(rep(0, 50), rep(1, 50)),
@@ -581,6 +558,53 @@ test_that("Results for accuracy are equal to results by OptimalCutpoints", {
                             metric = accuracy, direction = ">=",
                             pos_class = 1)
     expect_equal(round(opt_cut_cp$optimal_cutpoint, 4), c(0.9771, 0.0744))
+})
+
+test_that("Results for roc01 are equal to results by OptimalCutpoints", {
+    set.seed(1957)
+    tempdat <- data.frame(x = c(rnorm(100), rnorm(100, mean = 1)) ,
+                          y = c(rep(0, 100), rep(1, 100)),
+                          group = sample(c("a", "b"), size = 200, replace = TRUE))
+
+    opt_cut_cp <- cutpointr(tempdat, x, y, method = minimize_metric,
+                            metric = roc01, direction = ">=",
+                            pos_class = 1)
+    expect_equal(round(opt_cut_cp$optimal_cutpoint, 4), 0.3255)
+
+    opt_cut_cp <- cutpointr(tempdat, x, y, group, method = minimize_metric,
+                            metric = roc01, direction = ">=",
+                            pos_class = 1)
+    expect_equal(round(opt_cut_cp$optimal_cutpoint, 4), c(0.5312, 0.3307))
+})
+
+test_that("Results for constrained metrics are equal to results by OptimalCutpoints", {
+    set.seed(38129)
+    tempdat <- data.frame(x = c(rnorm(100), rnorm(100, mean = 1)) ,
+                          y = c(rep(0, 100), rep(1, 100)),
+                          group = sample(c("a", "b"), size = 200, replace = TRUE))
+
+    opt_cut_cp <- cutpointr(tempdat, x, y, metric = sens_constrain,
+                            min_constrain = 0.85, constrain_metric = specificity)
+    expect_equal(round(opt_cut_cp$optimal_cutpoint, 4), 1.3018)
+    expect_equal(round(opt_cut_cp$sens_constrain, 4), 0.44)
+    expect_equal(round(opt_cut_cp$specificity, 4), 0.8500)
+    expect_equal(opt_cut_cp$sensitivity, opt_cut_cp$sens_constrain)
+
+    opt_cut_cp <- cutpointr(tempdat, x, y, metric = spec_constrain,
+                            min_constrain = 0.85, constrain_metric = sensitivity)
+    expect_equal(round(opt_cut_cp$optimal_cutpoint, 4), 0.2775)
+    expect_equal(round(opt_cut_cp$spec_constrain, 4), 0.54)
+    expect_equal(round(opt_cut_cp$sensitivity, 4), 0.8500)
+    expect_equal(opt_cut_cp$specificity, opt_cut_cp$spec_constrain)
+
+    opt_cut_cp <- cutpointr(tempdat, x, y, metric = metric_constrain,
+                            min_constrain = 0.85,
+                            constrain_metric = npv, main_metric = ppv) %>%
+        add_metric(list(npv, ppv))
+    expect_equal(round(opt_cut_cp$optimal_cutpoint, 4), 0.1435)
+    expect_equal(round(opt_cut_cp$ppv_constrain, 4), 0.6500)
+    expect_equal(round(opt_cut_cp$npv, 4), 0.8500)
+    expect_equal(opt_cut_cp$ppv_constrain, opt_cut_cp$ppv)
 })
 
 test_that("Results for F1_score are equal to results by ROCR", {
@@ -765,7 +789,15 @@ test_that("multi_cutpointr runs without errors", {
                           pos_class = "yes")
     expect_equal(mc$optimal_cutpoint, c(55, 2))
 
+    mc <- multi_cutpointr(suicide, class = "suicide",
+                          pos_class = "yes")
+    expect_equal(mc$optimal_cutpoint, c(55, 2))
+
     mc <- multi_cutpointr(suicide, x = c("age", "dsi"), class = "suicide",
+                          subgroup = "gender", pos_class = "yes")
+    expect_equal(mc$optimal_cutpoint, c(55, 21, 2, 3))
+
+    mc <- multi_cutpointr(suicide, class = "suicide",
                           subgroup = "gender", pos_class = "yes")
     expect_equal(mc$optimal_cutpoint, c(55, 21, 2, 3))
 })
@@ -1176,7 +1208,7 @@ test_that("summary is printed correctly", {
     expect_output(print(scp), "Outcome: suicide")
     expect_output(print(scp), "Direction: >=")
     expect_output(print(scp), "Nr. of bootstraps: 10")
-    expect_output(print(scp), "accuracy_oob 0.8342")
+    expect_output(print(scp), "accuracy_oob [0-9]*")
 
     set.seed(83)
     cp <- cutpointr(suicide, dsi, suicide, gender, method = oc_youden_normal,
@@ -1192,7 +1224,7 @@ test_that("summary is printed correctly", {
     expect_output(print(scp), "Outcome: suicide")
     expect_output(print(scp), "Direction: >=")
     expect_output(print(scp), "Nr. of bootstraps: 10")
-    expect_output(print(scp), "accuracy_oob 0.8201")
+    expect_output(print(scp), "accuracy_oob [0-9]*")
 
     set.seed(8213)
     cp <- cutpointr(suicide$dsi, suicide$suicide, suicide$gender,
@@ -1208,7 +1240,7 @@ test_that("summary is printed correctly", {
     expect_output(print(scp), "Subgroup: male")
     expect_output(print(scp), "Direction: >=")
     expect_output(print(scp), "Nr. of bootstraps: 10")
-    expect_output(print(scp), "accuracy_oob 0.8163")
+    expect_output(print(scp), "accuracy_oob [0-9]*")
 })
 
 test_that("add_metric adds metrics correctly", {
@@ -1228,6 +1260,14 @@ test_that("add_metric adds metrics correctly", {
     oc <- add_metric(oc, list(abs_d_ppv_npv, abs_d_sens_spec))
     expect_equal(oc$abs_d_ppv_npv, 0.670741, tolerance = 1e-5)
     expect_equal(oc$abs_d_sens_spec, 0.0259857, tolerance = 1e-5)
+
+    rcp <- roc(data = suicide, x = "dsi", class = "suicide",
+               pos_class = "yes", neg_class = "no", direction = ">=") %>%
+        add_metric(list(cohens_kappa, F1_score))
+    expect_equal(rcp$cohens_kappa, c(0.00000000, 0.05058128, 0.09312293, 0.13833841,
+                                     0.18161477, 0.30098108, 0.52746652, 0.52329749,
+                                     0.47076829, 0.42463778, 0.41208251, 0.27878034,
+                                     0.00000000), tolerance = 1e-5)
 
     tempdat <- data.frame(y = c(0,0,0,1,0,1,1,1),
                           x = 1:8)
@@ -1255,4 +1295,80 @@ test_that("add_metric adds metrics correctly", {
     oc <- cutpointr(suicide, dsi, suicide)
     oc <- add_metric(oc, list(mymetric))
     expect_equal(oc$mymet, 42)
+})
+
+test_that("cutpointr works if method / metric are called with ::", {
+    expect_silent(cutpointr(suicide, dsi, suicide,
+                            method = cutpointr::maximize_boot_metric,
+                            metric = cutpointr::accuracy, silent = TRUE))
+    expect_silent(cutpointr_(suicide, "dsi", "suicide",
+                            method = cutpointr::maximize_boot_metric,
+                            metric = cutpointr::accuracy, silent = TRUE))
+    expect_silent(cutpointr(suicide$dsi, suicide$suicide,
+                            method = cutpointr::maximize_boot_metric,
+                            metric = cutpointr::cohens_kappa, silent = TRUE))
+})
+
+test_that("Plotting with multi_cutpointr throws error", {
+    expect_error(plot(
+        multi_cutpointr(suicide, x = c("age", "dsi"),
+                        class = "suicide", pos_class = "yes")
+        ))
+    expect_error(plot(
+        multi_cutpointr(suicide, x = c("age", "dsi"), subgroup = "gender",
+                        class = "suicide", pos_class = "yes")
+        ))
+})
+
+test_that("Summary(multi_cutpointr) is silent", {
+    expect_silent(
+        smcp <- summary(
+            multi_cutpointr(suicide, x = c("age", "dsi"), class = "suicide",
+                            pos_class = "yes", silent = TRUE)
+        )
+    )
+    expect_silent(
+        smcp <- summary(
+            multi_cutpointr(suicide, x = c("age", "dsi"), class = "suicide",
+                            subgroup = "gender",
+                            pos_class = "yes", silent = TRUE)
+        )
+    )
+    expect_silent(
+        smcp <- summary(
+            multi_cutpointr(suicide, x = c("age", "dsi"), class = "suicide",
+                            boot_runs = 5,
+                            pos_class = "yes", silent = TRUE)
+        )
+    )
+    expect_silent(
+        smcp <- summary(
+            multi_cutpointr(suicide, x = c("age", "dsi"), class = "suicide",
+                            subgroup = "gender", boot_runs = 5,
+                            pos_class = "yes", silent = TRUE)
+        )
+    )
+})
+
+test_that("multi_cutpointr fetches numeric columns correctly", {
+    tempdat <- iris[1:99, ]
+    tempdat$char <- "XYZ"
+    set.seed(734)
+    tempdat$g <- sample(0:1, size = 99, replace = TRUE)
+
+    expect_silent(
+       mcp <- multi_cutpointr(tempdat, class = "Species", silent = TRUE)
+    )
+    expect_equal(nrow(mcp), 5)
+
+    expect_silent(
+       mcp <- multi_cutpointr(tempdat, class = "Species", subgroup = "g", silent = TRUE)
+    )
+    expect_equal(nrow(mcp), 8)
+
+    expect_silent(
+       mcp <- multi_cutpointr(tempdat, class = "Species", subgroup = "g",
+                              silent = TRUE, boot_runs = 10)
+    )
+    expect_equal(nrow(mcp), 8)
 })

@@ -57,8 +57,8 @@ will be used to assess the variability and the out-of-sample performance.}
 
 \item{use_midpoints}{(logical) If TRUE (default FALSE) the returned optimal
 cutpoint will be the mean of the optimal cutpoint and the next highest
-observation (for direction = ">") or the next lowest observation
-(for direction = "<") which avoids biasing the optimal cutpoint.}
+observation (for direction = ">=") or the next lowest observation
+(for direction = "<=") which avoids biasing the optimal cutpoint.}
 
 \item{break_ties}{If multiple cutpoints are found, they can be summarized using
 this function, e.g. mean or median. To return all cutpoints use c as the function.}
@@ -175,6 +175,12 @@ Built-in metric functions include:
  Additional arguments to cutpointr: \code{utility_tp}, \code{utility_tn},
  \code{cost_fp}, \code{cost_fn}
  \item \code{F1_score}: The F1-score (2 * TP) / (2 * TP + FP + FN)
+ \item \code{sens_constrain}: Maximize sensitivity given a minimal value of
+ specificity
+ \item \code{spec_constrain}: Maximize specificity given a minimal value of
+ sensitivity
+ \item \code{metric_constrain}: Maximize a selected metric given a minimal
+ value of another selected metric
 }
 
 Furthermore, the following functions are included which can be used as metric
@@ -232,7 +238,7 @@ library(cutpointr)
 data(suicide)
 opt_cut <- cutpointr(suicide, dsi, suicide)
 opt_cut
-summary(opt_cut)
+s_opt_cut <- summary(opt_cut)
 plot(opt_cut)
 
 \dontrun{
@@ -250,6 +256,8 @@ cutpointr(suicide, dsi, suicide, direction = ">=", pos_class = "yes",
 ## Optimal cutpoint for dsi, as before, but for the separate subgroups
 opt_cut <- cutpointr(suicide, dsi, suicide, gender)
 opt_cut
+(s_opt_cut <- summary(opt_cut))
+tibble:::print.tbl(s_opt_cut)
 
 ## Bootstrapping also works on individual subgroups
 ## low boot_runs for illustrative purposes

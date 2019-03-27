@@ -91,6 +91,12 @@
 #'  Additional arguments to cutpointr: \code{utility_tp}, \code{utility_tn},
 #'  \code{cost_fp}, \code{cost_fn}
 #'  \item \code{F1_score}: The F1-score (2 * TP) / (2 * TP + FP + FN)
+#'  \item \code{sens_constrain}: Maximize sensitivity given a minimal value of
+#'  specificity
+#'  \item \code{spec_constrain}: Maximize specificity given a minimal value of
+#'  sensitivity
+#'  \item \code{metric_constrain}: Maximize a selected metric given a minimal
+#'  value of another selected metric
 #' }
 #'
 #' Furthermore, the following functions are included which can be used as metric
@@ -148,7 +154,7 @@
 #' data(suicide)
 #' opt_cut <- cutpointr(suicide, dsi, suicide)
 #' opt_cut
-#' summary(opt_cut)
+#' s_opt_cut <- summary(opt_cut)
 #' plot(opt_cut)
 #'
 #' \dontrun{
@@ -166,6 +172,8 @@
 #' ## Optimal cutpoint for dsi, as before, but for the separate subgroups
 #' opt_cut <- cutpointr(suicide, dsi, suicide, gender)
 #' opt_cut
+#' (s_opt_cut <- summary(opt_cut))
+#' tibble:::print.tbl(s_opt_cut)
 #'
 #' ## Bootstrapping also works on individual subgroups
 #' ## low boot_runs for illustrative purposes
@@ -222,8 +230,8 @@
 #' will be used to assess the variability and the out-of-sample performance.
 #' @param use_midpoints (logical) If TRUE (default FALSE) the returned optimal
 #' cutpoint will be the mean of the optimal cutpoint and the next highest
-#' observation (for direction = ">") or the next lowest observation
-#' (for direction = "<") which avoids biasing the optimal cutpoint.
+#' observation (for direction = ">=") or the next lowest observation
+#' (for direction = "<=") which avoids biasing the optimal cutpoint.
 #' @param break_ties If multiple cutpoints are found, they can be summarized using
 #' this function, e.g. mean or median. To return all cutpoints use c as the function.
 #' @param na.rm (logical) Set to TRUE (default FALSE) to keep only complete
@@ -297,16 +305,12 @@ cutpointr.default <- function(data, x, class, subgroup = NULL,
         mod_name <- as.character(substitute(method))
     }
     if (is.null(mod_name)) stop("Could not get the method function")
+    mod_name <- check_method_name(mod_name)
 
     # Get metric function
     if (length(metric) > 1 | !(class(metric) == "function")) {
         stop("metric should be a function")
     }
-    cl <- match.call()
-    metric_name <- cl$metric
-    # if default was not changed:
-    metric_name <- as.character(substitute(metric))
-    if (is.null(metric_name)) stop("Could not get the metric function")
     if (silent) {
         suppressMessages(
             cutpointr_internal(x, class, subgroup, method, metric, pos_class, neg_class,
@@ -346,16 +350,12 @@ cutpointr.numeric <- function(x, class, subgroup = NULL,
         mod_name <- as.character(substitute(method))
     }
     if (is.null(mod_name)) stop("Could not get the method function")
+    mod_name <- check_method_name(mod_name)
 
     # Get metric function
     if (length(metric) > 1 | !(class(metric) == "function")) {
         stop("metric should be a function")
     }
-    cl <- match.call()
-    metric_name <- cl$metric
-    # if default was not changed:
-    metric_name <- as.character(substitute(metric))
-    if (is.null(metric_name)) stop("Could not get the metric function")
     if (silent) {
         suppressMessages(
             cutpointr_internal(x, class, subgroup, method, metric, pos_class, neg_class,
@@ -424,21 +424,15 @@ cutpointr_ <- function(data, x, class, subgroup = NULL,
     } else {
         cl <- match.call()
         mod_name <- cl$method
-        # if default was not changed:
         mod_name <- as.character(substitute(method))
     }
     if (is.null(mod_name)) stop("Could not get the method function")
+    mod_name <- check_method_name(mod_name)
 
     # Get metric function
     if (length(metric) > 1 | !(class(metric) == "function")) {
         stop("metric should be a function")
     }
-    cl <- match.call()
-    metric_name <- cl$metric
-    # if default was not changed:
-    metric_name <- as.character(substitute(metric))
-    if (is.null(metric_name)) stop("Could not get the metric function")
-
     if (silent) {
         suppressMessages(
             cutpointr_internal(x, class, subgroup, method, metric, pos_class, neg_class,
@@ -545,7 +539,7 @@ cutpointr_internal <- function(x, class, subgroup, method, metric, pos_class,
                 m <- metric(tp = optcut$roc_curve[[1]]$tp[opt_ind],
                             fp = optcut$roc_curve[[1]]$fp[opt_ind],
                             tn = optcut$roc_curve[[1]]$tn[opt_ind],
-                            fn = optcut$roc_curve[[1]]$fn[opt_ind])
+                            fn = optcut$roc_curve[[1]]$fn[opt_ind], ...)
                 m <- check_metric_name(m)
                 colnames(m) <- make.names(colnames(m))
                 optcut <- dplyr::bind_cols(optcut, tibble::as_tibble(m))
@@ -558,7 +552,7 @@ cutpointr_internal <- function(x, class, subgroup, method, metric, pos_class,
             m <- metric(tp = optcut$roc_curve[[1]]$tp[opt_ind],
                         fp = optcut$roc_curve[[1]]$fp[opt_ind],
                         tn = optcut$roc_curve[[1]]$tn[opt_ind],
-                        fn = optcut$roc_curve[[1]]$fn[opt_ind])
+                        fn = optcut$roc_curve[[1]]$fn[opt_ind], ...)
             optcut <- add_list(optcut, as.numeric(m), optcut$metric_name)
             sesp <- sesp_from_oc(optcut$roc_curve[[1]],
                                  oc = optcut$optimal_cutpoint,
@@ -647,7 +641,7 @@ cutpointr_internal <- function(x, class, subgroup, method, metric, pos_class,
         m <- metric(tp = optcut$roc_curve[[1]]$tp[opt_ind],
                     fp = optcut$roc_curve[[1]]$fp[opt_ind],
                     tn = optcut$roc_curve[[1]]$tn[opt_ind],
-                    fn = optcut$roc_curve[[1]]$fn[opt_ind])
+                    fn = optcut$roc_curve[[1]]$fn[opt_ind], ...)
         optcut <- add_list(optcut, as.numeric(m), optcut$metric_name)
         sesp <- sesp_from_oc(optcut$roc_curve[[1]],
                              oc = optcut$optimal_cutpoint,
@@ -704,12 +698,14 @@ cutpointr_internal <- function(x, class, subgroup, method, metric, pos_class,
         bootstrap <- dat %>%
             dplyr::transmute_(boot = ~ purrr::map2(dat$data, dat$pos_class,
                                                     function(g, pc) {
+                # ind_pos <- which(unlist(g[, outcome]) == pc)
+                # ind_neg <- which(unlist(g[, outcome]) == neg_class)
                 boot_g <- foreach::foreach(rep = 1:boot_runs, .combine = rbind,
                     .export = c("method", "direction", "metric", "break_ties",
                     "neg_class", "mn", "use_midpoints",
                     "predictor", "outcome", "tol_metric")) %seq_or_par%
                     {
-                        b_ind <- simple_boot(g, outcome)
+                        b_ind <- simple_boot(data = g, dep_var = outcome)
                         optcut_b <- method(data = g[b_ind, ], x = predictor,
                                            metric_func = metric,
                                            class = outcome,
@@ -855,9 +851,10 @@ cutpointr_internal <- function(x, class, subgroup, method, metric, pos_class,
 
 #' Calculate optimal cutpoints and further statistics for multiple predictors
 #'
-#' Runs \code{cutpointr_} over multiple predictor variables. By default, \code{cutpointr_}
-#' will be run using all columns in the data set as predictors except for the
-#' variable in \code{class}.
+#' Runs \code{cutpointr_} over multiple predictor variables. If
+#' \code{x = NULL}, \code{cutpointr_}
+#' will be run using all numeric columns in the data set as predictors except for the
+#' variable in \code{class} and, if given, \code{subgroup}.
 #'
 #' The automatic determination of positive / negative classes and \code{direction}
 #' will be carried out separately for every predictor variable. That way, if
@@ -866,25 +863,32 @@ cutpointr_internal <- function(x, class, subgroup, method, metric, pos_class,
 #' \code{direction} is equal within every subgroup.
 #'
 #' @param data A data frame.
-#' @param x Character vector of predictor variables.
+#' @param x Character vector of predictor variables. If NULL all numeric columns.
 #' @param class The name of the outcome / independent variable.
 #' @param silent Whether to suppress messages.
-#' @param ... Further arguments to be passed to cutpointr.
+#' @param ... Further arguments to be passed to cutpointr_ (Use a quoted variable
+#' name for subgroup).
 #' @examples
 #' library(cutpointr)
 #'
 #' multi_cutpointr(suicide, x = c("age", "dsi"), class = "suicide",
 #'                 pos_class = "yes")
 #'
-#' multi_cutpointr(suicide, x = c("age", "dsi"), class = "suicide",
-#'                 subgroup = "gender", pos_class = "yes")
+#' mcp <- multi_cutpointr(suicide, x = c("age", "dsi"), class = "suicide",
+#'                        subgroup = "gender", pos_class = "yes")
+#' mcp
+#'
+#' (scp <- summary(mcp))
+#' \dontrun{
+#' tibble:::print.tbl(scp)
+#' }
 #'
 #' @return A data frame.
 #' @importFrom purrr %>%
 #' @family main cutpointr functions
 #' @export
-multi_cutpointr <- function(data, x = colnames(data)[colnames(data) != class],
-                            class, silent = FALSE, ...) {
+multi_cutpointr <- function(data, x = NULL, class, silent = FALSE, ...) {
+    if (is.null(x)) x = get_numeric_cols(data, class)
     if(!(is.character(class) & length(class == 1))) {
         stop("class should be the name of the outcome variable (character)")
     }
@@ -894,10 +898,8 @@ multi_cutpointr <- function(data, x = colnames(data)[colnames(data) != class],
     }
     res <- purrr::map_df(x, function(coln) {
         if (!silent) message(paste0(coln, ":"))
-        cutpointr_(data, coln, class, silent = silent, ...) %>%
-            dplyr::mutate(variable = coln)
+        cutpointr_(data, coln, class, silent = silent, ...)
     })
-    res <- res[, c("variable", colnames(res)[colnames(res) != "variable"])]
     class(res) <- c("multi_cutpointr", class(res))
     return(res)
 }
