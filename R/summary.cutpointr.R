@@ -9,7 +9,7 @@ summary.cutpointr <- function(object, ...) {
         }
         x_summary[[r]]$cutpointr <- temprow
         x_summary[[r]]$desc <- temprow$data[[1]] %>%
-            dplyr::select_(as.name(temprow$predictor)) %>%
+            dplyr::select(temprow$predictor) %>%
             unlist %>%
             summary_sd
         x_summary[[r]]$desc_byclass <-
@@ -18,13 +18,14 @@ summary.cutpointr <- function(object, ...) {
                 dat <- x[, temprow$predictor]
                 dat <- unlist(dat)
                 summary_sd(dat)
+
             })
         x_summary[[r]]$desc_byclass <- data.frame(do.call(rbind, x_summary[[r]]$desc_byclass))
         colnames(x_summary[[r]]$desc_byclass) <- c("Min.", "5%", "1st Qu.", "Median",
-                                                   "Mean", "3rd Qu.", "95%", "Max", "SD")
+                                                   "Mean", "3rd Qu.", "95%", "Max.", "SD", "NAs")
         x_summary[[r]]$n_obs <- nrow(temprow$data[[1]])
         x_summary[[r]]$n_pos <- temprow$data[[1]] %>%
-            dplyr::select_(as.name(temprow$outcome)) %>%
+            dplyr::select(temprow$outcome) %>%
             unlist %>% (function(x) sum(x == temprow$pos_class))
         x_summary[[r]]$n_neg <- x_summary[[r]]$n_obs - x_summary[[r]]$n_pos
         # Confusion Matrix
@@ -37,7 +38,7 @@ summary.cutpointr <- function(object, ...) {
         )
         if (has_boot_results(temprow)) {
             x_summary[[r]][["boot"]] <- purrr::map(temprow[["boot"]][[1]][, 1:13], function(x) {
-                round(summary_sd(x), 4)
+                summary_sd(x)
             })
             x_summary[[r]][["boot"]] <- do.call(rbind, x_summary[[r]][["boot"]])
             x_summary[[r]][["boot"]] <- as.data.frame(x_summary[[r]][["boot"]])
@@ -66,7 +67,7 @@ tidy_summary <- function(x) {
     )
     if (has_boot_results(x)) {
         res <- dplyr::bind_cols(res,
-                                tidyr::nest_(x[["boot"]], key_col = "boot"),
+                                tibble::tibble(boot = list(x[["boot"]])),
                                 boot_runs = x$boot_runs)
     }
     if (has_column(x, "subgroup")) {

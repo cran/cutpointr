@@ -22,7 +22,7 @@ summary.multi_cutpointr <- function(object, ...) {
             })
         x_summary[[r]]$desc_byclass <- data.frame(do.call(rbind, x_summary[[r]]$desc_byclass))
         colnames(x_summary[[r]]$desc_byclass) <- c("Min.", "5%", "1st Qu.", "Median",
-                                                   "Mean", "3rd Qu.", "95%", "Max", "SD")
+                                                   "Mean", "3rd Qu.", "95%", "Max.", "SD", "NAs")
         x_summary[[r]]$n_obs <- nrow(temprow$data[[1]])
         x_summary[[r]]$n_pos <- temprow$data[[1]] %>%
             dplyr::select(!!as.name(temprow$outcome)) %>%
@@ -38,7 +38,7 @@ summary.multi_cutpointr <- function(object, ...) {
         )
         if (has_boot_results(temprow)) {
             x_summary[[r]][["boot"]] <- purrr::map(temprow[["boot"]][[1]][, 1:13], function(x) {
-                round(summary_sd(x), 4)
+                summary_sd(x)
             })
             x_summary[[r]][["boot"]] <- do.call(rbind, x_summary[[r]][["boot"]])
             x_summary[[r]][["boot"]] <- as.data.frame(x_summary[[r]][["boot"]])
@@ -70,7 +70,8 @@ tidy_summary_multi <- function(x) {
     )
     if (has_boot_results(x)) {
         res <- dplyr::bind_cols(res,
-                                tidyr::nest_(x[["boot"]], key_col = "boot"),
+                                # tidyr::nest(x[["boot"]], .key = "boot"),
+                                tibble::tibble(boot = list(x[["boot"]])),
                                 boot_runs = x$boot_runs)
     }
     if (has_column(x, "subgroup")) {

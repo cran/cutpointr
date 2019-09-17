@@ -2,17 +2,26 @@
 % Please edit documentation in R/plot_roc.R
 \name{plot_roc}
 \alias{plot_roc}
-\title{Plot ROC curve from a cutpointr object}
+\alias{plot_roc.cutpointr}
+\alias{plot_roc.roc_cutpointr}
+\title{Plot ROC curve from a cutpointr or roc_cutpointr object}
 \usage{
-plot_roc(x, display_cutpoint = TRUE, ...)
+plot_roc(x, ...)
+
+\method{plot_roc}{cutpointr}(x, display_cutpoint = TRUE, type = "line",
+  ...)
+
+\method{plot_roc}{roc_cutpointr}(x, type = "line", ...)
 }
 \arguments{
 \item{x}{A cutpointr or roc_cutpointr object.}
 
+\item{...}{Additional arguments (unused).}
+
 \item{display_cutpoint}{(logical) Whether or not to display the optimal
 cutpoint as a dot on the ROC curve for cutpointr objects.}
 
-\item{...}{Additional arguments (unused).}
+\item{type}{"line" for line plot (default) or "step" for step plot.}
 }
 \description{
 Given a \code{cutpointr} object this function plots the ROC curve(s)
@@ -24,6 +33,11 @@ plot_roc(opt_cut, display_cutpoint = FALSE)
 
 opt_cut_2groups <- cutpointr(suicide, dsi, suicide, gender)
 plot_roc(opt_cut_2groups, display_cutpoint = TRUE)
+
+roc_curve <- roc(suicide, x = dsi, class = suicide, pos_class = "yes",
+  neg_class = "no", direction = ">=")
+plot(roc_curve)
+auc(roc_curve)
 }
 \seealso{
 Other cutpointr plotting functions: \code{\link{plot.cutpointr}},

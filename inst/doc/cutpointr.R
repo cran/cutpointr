@@ -1,12 +1,6 @@
 ## ---- include = FALSE----------------------------------------------------
 knitr::opts_chunk$set(fig.width = 6, fig.height = 5, fig.align = "center")
 
-## ---- include = FALSE, echo = FALSE--------------------------------------
-library(ggplot2)
-library(dplyr)
-library(tidyr)
-library(purrr)
-
 ## ----CRAN, eval = FALSE--------------------------------------------------
 #  install.packages("cutpointr")
 
@@ -25,23 +19,8 @@ summary(cp)
 plot(cp)
 
 ## ------------------------------------------------------------------------
-library(cutpointr)
-data(suicide)
-head(suicide)
-opt_cut <- cutpointr(suicide, dsi, suicide)
-opt_cut
-
-## ------------------------------------------------------------------------
-cutpointr(x = suicide$dsi, class = suicide$suicide)
-
-## ------------------------------------------------------------------------
 opt_cut <- cutpointr(suicide, dsi, suicide, direction = ">=", pos_class = "yes",
                      neg_class = "no", method = maximize_metric, metric = youden)
-opt_cut
-
-## ------------------------------------------------------------------------
-summary(opt_cut)
-plot(opt_cut)
 
 ## ------------------------------------------------------------------------
 plot_metric(opt_cut)
@@ -50,39 +29,11 @@ plot_metric(opt_cut)
 predict(opt_cut, newdata = data.frame(dsi = 0:5))
 
 ## ------------------------------------------------------------------------
-opt_cut <- cutpointr(suicide, dsi, suicide, gender)
-summary(opt_cut)
-plot(opt_cut)
-
-## ------------------------------------------------------------------------
-set.seed(12)
-opt_cut <- cutpointr(suicide, dsi, suicide, boot_runs = 50)
-opt_cut
-
-## ------------------------------------------------------------------------
 opt_cut$boot
 
 ## ------------------------------------------------------------------------
 summary(opt_cut)
 plot(opt_cut)
-
-## ------------------------------------------------------------------------
-if (suppressPackageStartupMessages(require(doParallel) & require(doRNG))) {
-  cl <- makeCluster(2) # 2 cores
-  registerDoParallel(cl)
-  registerDoRNG(12) # Reproducible parallel loops using doRNG
-  opt_cut <- cutpointr(suicide, dsi, suicide, gender, pos_class = "yes",
-                 direction = ">=", boot_runs = 30, allowParallel = TRUE)
-  stopCluster(cl)
-  opt_cut
-}
-
-## ------------------------------------------------------------------------
-set.seed(100)
-cutpointr(suicide, dsi, suicide, gender, 
-          method = maximize_boot_metric,
-          boot_cut = 30, summary_func = mean,
-          metric = accuracy, silent = TRUE)
 
 ## ------------------------------------------------------------------------
 opt_cut <- cutpointr(suicide, dsi, suicide, gender, method = minimize_metric,
@@ -102,6 +53,7 @@ opt_cut <- cutpointr(suicide, dsi, suicide, gender,
 plot_metric(opt_cut)
 
 ## ------------------------------------------------------------------------
+library(ggplot2)
 exdat <- iris
 exdat <- exdat[exdat$Species != "setosa", ]
 opt_cut <- cutpointr(exdat, Petal.Length, Species,
@@ -109,10 +61,6 @@ opt_cut <- cutpointr(exdat, Petal.Length, Species,
                      formula = m ~ s(x.sorted, bs = "cr"),
                      metric = abs_d_sens_spec)
 plot_metric(opt_cut)
-ggplot(opt_cut$roc_curve[[1]] %>% 
-           gather(metric, value, m, m_unsmoothed, -x.sorted, na.rm = TRUE),
-       aes(x = x.sorted, y = value, color = metric)) + 
-    geom_line()
 
 ## ------------------------------------------------------------------------
 opt_cut <- cutpointr(suicide, dsi, suicide, gender, 
@@ -127,9 +75,11 @@ cutpointr(suicide, dsi, suicide, gender, method = oc_youden_normal)
 cutpointr(suicide, dsi, suicide, gender, method = oc_youden_kernel)
 
 ## ---- fig.width=4, fig.height=3------------------------------------------
-roc_curve <- roc(data = suicide, x = "dsi", class = "suicide",
-    pos_class = "yes", neg_class = "no")
-plot_cutpointr(roc_curve, fpr, tpr, aspect_ratio = 1)
+roc_curve <- roc(data = suicide, x = dsi, class = suicide,
+    pos_class = "yes", neg_class = "no", direction = ">=")
+auc(roc_curve)
+head(roc_curve)
+plot_roc(roc_curve)
 
 ## ------------------------------------------------------------------------
 dat <- data.frame(outcome = c("neg", "neg", "neg", "pos", "pos", "pos", "pos"),
@@ -304,19 +254,21 @@ plotdat_nomidpoints <- structure(list(sim_nr = c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 
 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 
 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8
-)), .Names = c("sim_nr", "method", "n", "mean_err", "youden"), row.names = c(NA, 
--288L), vars = "sim_nr", labels = structure(list(sim_nr = 1:36), .Names = "sim_nr", class = "data.frame", row.names = c(NA, 
--36L), vars = "sim_nr"), indices = list(0:7, 8:15, 16:23, 24:31, 
-    32:39, 40:47, 48:55, 56:63, 64:71, 72:79, 80:87, 88:95, 96:103, 
-    104:111, 112:119, 120:127, 128:135, 136:143, 144:151, 152:159, 
-    160:167, 168:175, 176:183, 184:191, 192:199, 200:207, 208:215, 
-    216:223, 224:231, 232:239, 240:247, 248:255, 256:263, 264:271, 
-    272:279, 280:287), group_sizes = c(8L, 8L, 8L, 8L, 8L, 8L, 
+)), row.names = c(NA, -288L), group_sizes = c(8L, 8L, 8L, 8L, 
 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 
-8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L), biggest_group_size = 8L, class = c("grouped_df", 
-"tbl_df", "tbl", "data.frame"))
+8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L, 8L
+), biggest_group_size = 8L, class = c("grouped_df", "tbl_df", 
+"tbl", "data.frame"), groups = structure(list(sim_nr = 1:36, 
+    .rows = list(1:8, 9:16, 17:24, 25:32, 33:40, 41:48, 49:56, 
+        57:64, 65:72, 73:80, 81:88, 89:96, 97:104, 105:112, 113:120, 
+        121:128, 129:136, 137:144, 145:152, 153:160, 161:168, 
+        169:176, 177:184, 185:192, 193:200, 201:208, 209:216, 
+        217:224, 225:232, 233:240, 241:248, 249:256, 257:264, 
+        265:272, 273:280, 281:288)), row.names = c(NA, -36L), class = c("tbl_df", 
+"tbl", "data.frame"), .drop = TRUE))
 
 ## ---- echo = FALSE-------------------------------------------------------
+library(dplyr)
 ggplot(plotdat_nomidpoints %>% filter(!(method %in% c("spline_20"))), 
        aes(x = n, y = mean_err, color = method, shape = method)) + 
     geom_line() + geom_point() +
@@ -328,10 +280,11 @@ ggplot(plotdat_nomidpoints %>% filter(!(method %in% c("spline_20"))),
 
 ## ------------------------------------------------------------------------
 opt_cut <- cutpointr(suicide, dsi, suicide, metric = sum_sens_spec, 
-                     tol_metric = 0.05)
+                     tol_metric = 0.05, break_ties = c)
+library(tidyr)
 opt_cut %>% 
     select(optimal_cutpoint, sum_sens_spec) %>% 
-    unnest
+    unnest(cols = c(optimal_cutpoint, sum_sens_spec))
 
 ## ------------------------------------------------------------------------
 set.seed(100)
@@ -340,63 +293,14 @@ opt_cut_manual <- cutpointr(suicide, dsi, suicide, method = oc_manual,
 set.seed(100)
 opt_cut_mean <- cutpointr(suicide, dsi, suicide, method = oc_mean, boot_runs = 30)
 
-## ------------------------------------------------------------------------
-set.seed(12)
-opt_cut <- cutpointr(suicide, log(dsi + 1), suicide == "yes",
-    subgroup = dsi %% 2 == 0, boot_runs = 30)
-opt_cut
-predict(opt_cut, newdata = data.frame(dsi = 0:5))
+## ---- eval = FALSE-------------------------------------------------------
+#  myvar <- "dsi"
+#  cutpointr(suicide, !!myvar, suicide)
 
 ## ------------------------------------------------------------------------
-dat <- iris %>% 
-    dplyr::filter(Species %in% c("setosa", "virginica"))
-
-purrr::map_df(colnames(dat)[1:4], function(coln) {
-    cutpointr_(dat, x = coln, class = "Species", 
-               pos_class = "setosa", use_midpoints = T) %>% 
-        mutate(variable = coln)
-}) %>% 
-    dplyr::select(variable, direction, optimal_cutpoint, AUC)
-
-## ------------------------------------------------------------------------
-mcp <- multi_cutpointr(dat, class = "Species", pos_class = "setosa", 
+mcp <- multi_cutpointr(suicide, class = suicide, pos_class = "yes", 
                 use_midpoints = TRUE, silent = TRUE) 
-mcp
-
-# Also the summary_multi_cutpointr object is a data frame
-tibble:::print.tbl(summary(mcp))
-
-## ------------------------------------------------------------------------
-# Extracting the bootstrap results
-set.seed(123)
-opt_cut <- cutpointr(suicide, dsi, suicide, boot_runs = 20)
-# Using base R to summarise the result of the first bootstrap
-summary(opt_cut$boot[[1]]$optimal_cutpoint)
-# Using dplyr
-opt_cut %>% 
-    select(boot) %>% 
-    unnest %>% 
-    select(optimal_cutpoint) %>% 
-    summary
-
-## ------------------------------------------------------------------------
-set.seed(123)
-opt_cut <- cutpointr(suicide, dsi, suicide, gender, boot_runs = 20)
-opt_cut %>% 
-    select(subgroup, boot) %>%
-    unnest %>%
-    group_by(subgroup) %>%
-    summarise(mean_oc = mean(optimal_cutpoint), 
-              mean_accuracy = mean(acc_oob))
-opt_cut %>%
-    select(subgroup, boot) %>% 
-    mutate(summary_b = map(boot, function(x) {
-        data.frame(min = min(x$optimal_cutpoint),
-                   mean = mean(x$optimal_cutpoint),
-                   max = max(x$optimal_cutpoint))
-    })) %>% 
-    select(-boot) %>%
-    unnest
+summary(mcp)
 
 ## ------------------------------------------------------------------------
 cutpointr(suicide, dsi, suicide, gender, metric = youden, silent = TRUE) %>% 
@@ -404,10 +308,11 @@ cutpointr(suicide, dsi, suicide, gender, metric = youden, silent = TRUE) %>%
     select(subgroup, optimal_cutpoint, youden, ppv, npv)
 
 ## ------------------------------------------------------------------------
-roc(data = suicide, x = "dsi", class = "suicide", pos_class = "yes",
+roc(data = suicide, x = dsi, class = suicide, pos_class = "yes",
     neg_class = "no", direction = ">=") %>% 
-    add_metric(list(cohens_kappa, F1_score)) %>% 
-    select(x.sorted, tp, fp, tn, fn, cohens_kappa, F1_score)
+  add_metric(list(cohens_kappa, F1_score)) %>% 
+  select(x.sorted, tp, fp, tn, fn, cohens_kappa, F1_score) %>% 
+  head()
 
 ## ---- eval = FALSE-------------------------------------------------------
 #  mean_cut <- function(data, x, ...) {
@@ -434,18 +339,17 @@ plot_roc(opt_cut)
 p <- plot_x(opt_cut)
 p + ggtitle("Distribution of dsi") + theme_minimal() + xlab("Depression score")
 
-## ---- fig.width=4, fig.height=3------------------------------------------
+## ---- fig.width=4, fig.height=3, cache=FALSE-----------------------------
 set.seed(500)
-oc <- cutpointr(suicide, dsi, suicide, boot_runs = 20, 
+oc <- cutpointr(suicide, dsi, suicide, boot_runs = 1000, 
                 metric = sum_ppv_npv) # metric irrelevant for plot_cutpointr
 plot_cutpointr(oc, xvar = cutpoints, yvar = sum_sens_spec, conf_lvl = 0.9)
 plot_cutpointr(oc, xvar = fpr, yvar = tpr, aspect_ratio = 1, conf_lvl = 0)
 plot_cutpointr(oc, xvar = cutpoint, yvar = tp, conf_lvl = 0.9) + geom_point()
 
-## ---- fig.width=4, fig.height=3------------------------------------------
-set.seed(123) # Some missing values expected
-opt_cut <- cutpointr(suicide, dsi, suicide, gender, boot_runs = 50)
-head(opt_cut$data)
+## ---- fig.width=4, fig.height=3, cache=FALSE-----------------------------
+set.seed(123) 
+opt_cut <- cutpointr(suicide, dsi, suicide, gender, boot_runs = 1000)
 
 opt_cut %>% 
     select(data, subgroup) %>% 
@@ -466,18 +370,31 @@ opt_cut %>%
 #  }
 #  
 #  # pROC package
-#  proc_sensspec <- function(x, class,
-#                            levels = c("no", "yes"), algo = 2) {
-#      r <- pROC::roc(class, x, algorithm = algo)
-#      sens <- r$sensitivities
-#      spec <- r$specificities
-#      cut <- r$thresholds
-#      cut[which.max(sens + spec)]
+#  proc_sensspec <- function(x, class) {
+#      r <- pROC::roc(class, x, algorithm = 2, levels = c(0, 1), direction = "<")
+#      pROC::coords(r, "best", ret="threshold", transpose = FALSE)[1]
 #  }
 
 ## ---- eval = FALSE, echo = FALSE-----------------------------------------
 #  library(OptimalCutpoints)
 #  library(ThresholdROC)
+#  n <- 100
+#  set.seed(123)
+#  dat <- data.frame(x = rnorm(n), y = sample(c(0:1), size = n, replace = TRUE))
+#  x_pos <- dat$x[dat$y == 1]
+#  x_neg <- dat$x[dat$y == 0]
+#  bench_100 <- microbenchmark::microbenchmark(
+#      cutpointr(dat, x, y, pos_class = 1, neg_class = 0,
+#                direction = ">=", metric = youden, break_ties = mean),
+#      rocr_sensspec(dat$x, dat$y),
+#      proc_sensspec(dat$x, dat$y),
+#      optimal.cutpoints(X = "x", status = "y", tag.healthy = 0, methods = "Youden",
+#                        data = dat),
+#      thres2(k1 = x_neg, k2 = x_pos, rho = 0.5,
+#             method = "empirical", ci = FALSE),
+#      times = 100, unit = "ms"
+#  )
+#  
 #  n <- 1000
 #  set.seed(123)
 #  dat <- data.frame(x = rnorm(n), y = sample(c(0:1), size = n, replace = TRUE))
@@ -487,11 +404,12 @@ opt_cut %>%
 #      cutpointr(dat, x, y, pos_class = 1, neg_class = 0,
 #                direction = ">=", metric = youden, break_ties = mean),
 #      rocr_sensspec(dat$x, dat$y),
-#      proc_sensspec(dat$x, dat$y, algo = 2),
+#      proc_sensspec(dat$x, dat$y),
 #      optimal.cutpoints(X = "x", status = "y", tag.healthy = 0, methods = "Youden",
 #                        data = dat),
 #      thres2(k1 = x_neg, k2 = x_pos, rho = 0.5,
-#             method = "empirical", ci = FALSE)
+#             method = "empirical", ci = FALSE),
+#      times = 100, unit = "ms"
 #  )
 #  
 #  n <- 10000
@@ -505,10 +423,10 @@ opt_cut %>%
 #      rocr_sensspec(dat$x, dat$y),
 #      optimal.cutpoints(X = "x", status = "y", tag.healthy = 0, methods = "Youden",
 #                        data = dat),
-#      proc_sensspec(dat$x, dat$y, algo = 2),
+#      proc_sensspec(dat$x, dat$y),
 #      thres2(k1 = x_neg, k2 = x_pos, rho = 0.5,
 #             method = "empirical", ci = FALSE),
-#      times = 20
+#      times = 100
 #  )
 #  
 #  n <- 1e5
@@ -518,8 +436,8 @@ opt_cut %>%
 #      cutpointr(dat, x, y, pos_class = 1, neg_class = 0,
 #                direction = ">=", metric = youden, break_ties = mean),
 #      rocr_sensspec(dat$x, dat$y),
-#      proc_sensspec(dat$x, dat$y, algo = 2),
-#      times = 20
+#      proc_sensspec(dat$x, dat$y),
+#      times = 100, unit = "ms"
 #  )
 #  
 #  n <- 1e6
@@ -529,7 +447,8 @@ opt_cut %>%
 #      cutpointr(dat, x, y, pos_class = 1, neg_class = 0,
 #                direction = ">=", metric = youden, break_ties = mean),
 #      rocr_sensspec(dat$x, dat$y),
-#      times = 10
+#      proc_sensspec(dat$x, dat$y),
+#      times = 30, unit = "ms"
 #  )
 #  
 #  n <- 1e7
@@ -539,168 +458,200 @@ opt_cut %>%
 #      cutpointr(dat, x, y, pos_class = 1, neg_class = 0,
 #                direction = ">=", metric = youden, break_ties = mean),
 #      rocr_sensspec(dat$x, dat$y),
-#      times = 10, unit = "ms"
+#      proc_sensspec(dat$x, dat$y),
+#      times = 30, unit = "ms"
 #  )
 #  
 #  results <- rbind(
+#      data.frame(time = summary(bench_100)$median,
+#                 Solution = summary(bench_100)$expr,
+#                 n = 100),
 #      data.frame(time = summary(bench_1000)$median,
-#                 solution = summary(bench_1000)$expr,
+#                 Solution = summary(bench_1000)$expr,
 #                 n = 1000),
 #      data.frame(time = summary(bench_10000)$median,
-#                 solution = summary(bench_10000)$expr,
+#                 Solution = summary(bench_10000)$expr,
 #                 n = 10000),
 #      data.frame(time = summary(bench_1e5)$median,
-#                 solution = summary(bench_1e5)$expr,
+#                 Solution = summary(bench_1e5)$expr,
 #                 n = 1e5),
 #      data.frame(time = summary(bench_1e6)$median,
-#                 solution = summary(bench_1e6)$expr,
+#                 Solution = summary(bench_1e6)$expr,
 #                 n = 1e6),
 #      data.frame(time = summary(bench_1e7)$median,
-#                 solution = summary(bench_1e7)$expr,
+#                 Solution = summary(bench_1e7)$expr,
 #                 n = 1e7)
 #  )
-#  results$solution <- as.character(results$solution)
-#  results$solution[grep(pattern = "cutpointr", x = results$solution)] <- "cutpointr"
-#  results$solution[grep(pattern = "rocr", x = results$solution)] <- "ROCR"
-#  results$solution[grep(pattern = "optimal", x = results$solution)] <- "OptimalCutpoints"
-#  results$solution[grep(pattern = "proc", x = results$solution)] <- "pROC"
-#  results$solution[grep(pattern = "thres", x = results$solution)] <- "ThresholdROC"
+#  results$Solution <- as.character(results$Solution)
+#  results$Solution[grep(pattern = "cutpointr", x = results$Solution)] <- "cutpointr"
+#  results$Solution[grep(pattern = "rocr", x = results$Solution)] <- "ROCR"
+#  results$Solution[grep(pattern = "optimal", x = results$Solution)] <- "OptimalCutpoints"
+#  results$Solution[grep(pattern = "proc", x = results$Solution)] <- "pROC"
+#  results$Solution[grep(pattern = "thres", x = results$Solution)] <- "ThresholdROC"
+#  
+#  results$task <- "Cutpoint Estimation"
 
 ## ---- echo = FALSE-------------------------------------------------------
+# These are the original results on our system
 # dput(results)
-
-results <- structure(list(time = c(8.3344635, 3.0178925, 9.1314925, 56.2119325, 
-78.8832165, 13.057035, 11.284935, 5383.765367, 94.4034445, 7930.9735595, 
-68.155645, 108.9886265, 1021.0981875, 708.1933595, 1250.4259705, 
-5893.323971, 13247.3814165), solution = c("cutpointr", "ROCR", 
-"pROC", "OptimalCutpoints", "ThresholdROC", "cutpointr", "ROCR", 
-"OptimalCutpoints", "pROC", "ThresholdROC", "cutpointr", "ROCR", 
-"pROC", "cutpointr", "ROCR", "cutpointr", "ROCR"), n = c(1000, 
-1000, 1000, 1000, 1000, 10000, 10000, 10000, 10000, 10000, 1e+05, 
-1e+05, 1e+05, 1e+06, 1e+06, 1e+07, 1e+07)), .Names = c("time", 
-"solution", "n"), row.names = c(NA, -17L), class = "data.frame")
-
-## ---- echo = FALSE-------------------------------------------------------
-ggplot(results, aes(x = n, y = time, col = solution, shape = solution)) +
-    geom_point(size = 3) + geom_line() +
-    scale_y_log10(breaks = c(3, 5, 10, 25, 100, 250, 1000, 5000, 1e4, 15000)) +
-    scale_x_log10(breaks = c(1000, 1e4, 1e5, 1e6, 1e7)) +
-    ggtitle("Benchmark results", "n = 1000, 10000, 1e5, 1e6, 1e7") +
-    ylab("Median time (milliseconds, log scale)") + xlab("n (log scale)")
-
-## ---- echo = FALSE-------------------------------------------------------
-res_table <- tidyr::spread(results, solution, time)
-knitr::kable(res_table)
+results <- structure(list(time = c(4.5018015, 1.812802, 0.662101, 2.2887015, 
+1.194301, 4.839401, 2.1764015, 0.981001, 45.0568005, 36.2398515, 
+8.5662515, 5.667101, 2538.612001, 4.031701, 2503.8012505, 45.384501, 
+43.118751, 37.150151, 465.003201, 607.023851, 583.0950005, 5467.332801, 
+7850.2587, 7339.356101), Solution = c("cutpointr", "ROCR", "pROC", 
+"OptimalCutpoints", "ThresholdROC", "cutpointr", "ROCR", "pROC", 
+"OptimalCutpoints", "ThresholdROC", "cutpointr", "ROCR", "OptimalCutpoints", 
+"pROC", "ThresholdROC", "cutpointr", "ROCR", "pROC", "cutpointr", 
+"ROCR", "pROC", "cutpointr", "ROCR", "pROC"), n = c(100, 100, 
+100, 100, 100, 1000, 1000, 1000, 1000, 1000, 10000, 10000, 10000, 
+10000, 10000, 1e+05, 1e+05, 1e+05, 1e+06, 1e+06, 1e+06, 1e+07, 
+1e+07, 1e+07), task = c("Cutpoint Estimation", "Cutpoint Estimation", 
+"Cutpoint Estimation", "Cutpoint Estimation", "Cutpoint Estimation", 
+"Cutpoint Estimation", "Cutpoint Estimation", "Cutpoint Estimation", 
+"Cutpoint Estimation", "Cutpoint Estimation", "Cutpoint Estimation", 
+"Cutpoint Estimation", "Cutpoint Estimation", "Cutpoint Estimation", 
+"Cutpoint Estimation", "Cutpoint Estimation", "Cutpoint Estimation", 
+"Cutpoint Estimation", "Cutpoint Estimation", "Cutpoint Estimation", 
+"Cutpoint Estimation", "Cutpoint Estimation", "Cutpoint Estimation", 
+"Cutpoint Estimation")), row.names = c(NA, -24L), class = "data.frame")
 
 ## ---- eval = FALSE-------------------------------------------------------
 #  # ROCR package
 #  rocr_roc <- function(x, class) {
 #      pred <- ROCR::prediction(x, class)
+#      perf <- ROCR::performance(pred, "sens", "spec")
 #      return(NULL)
 #  }
 #  
 #  # pROC package
-#  proc_roc <- function(x, class, levels = c("no", "yes"), algo = 2) {
-#      r <- pROC::roc(class, x, algorithm = algo)
+#  proc_roc <- function(x, class) {
+#      r <- pROC::roc(class, x, algorithm = 2, levels = c(0, 1), direction = "<")
 #      return(NULL)
 #  }
 
 ## ---- eval = FALSE, echo = FALSE-----------------------------------------
+#  n <- 100
+#  set.seed(123)
+#  dat <- data.frame(x = rnorm(n), y = sample(c(0:1), size = n, replace = TRUE))
+#  bench_100 <- microbenchmark::microbenchmark(
+#      cutpointr::roc(dat, "x", "y", pos_class = 1,
+#                     neg_class = 0, direction = ">="),
+#      rocr_roc(dat$x, dat$y),
+#      proc_roc(dat$x, dat$y),
+#      times = 100, unit = "ms"
+#  )
 #  n <- 1000
 #  set.seed(123)
 #  dat <- data.frame(x = rnorm(n), y = sample(c(0:1), size = n, replace = TRUE))
-#  bench_1000 <- microbenchmark::microbenchmark(unit = "ms",
+#  bench_1000 <- microbenchmark::microbenchmark(
 #      cutpointr::roc(dat, "x", "y", pos_class = 1, neg_class = 0,
-#                direction = ">="),
+#                     direction = ">="),
 #      rocr_roc(dat$x, dat$y),
-#      proc_roc(dat$x, dat$y, algo = 2)
+#      proc_roc(dat$x, dat$y),
+#      times = 100, unit = "ms"
 #  )
-#  
 #  n <- 10000
 #  set.seed(123)
 #  dat <- data.frame(x = rnorm(n), y = sample(c(0:1), size = n, replace = TRUE))
-#  bench_10000 <- microbenchmark::microbenchmark(unit = "ms",
+#  bench_10000 <- microbenchmark::microbenchmark(
 #      cutpointr::roc(dat, "x", "y", pos_class = 1, neg_class = 0,
-#                direction = ">="),
+#                     direction = ">="),
 #      rocr_roc(dat$x, dat$y),
-#      proc_roc(dat$x, dat$y, algo = 2),
-#      times = 50
+#      proc_roc(dat$x, dat$y),
+#      times = 100, unit = "ms"
 #  )
-#  
 #  n <- 1e5
 #  set.seed(123)
 #  dat <- data.frame(x = rnorm(n), y = sample(c(0:1), size = n, replace = TRUE))
-#  bench_1e5 <- microbenchmark::microbenchmark(unit = "ms",
+#  bench_1e5 <- microbenchmark::microbenchmark(
 #      cutpointr::roc(dat, "x", "y", pos_class = 1, neg_class = 0,
-#                direction = ">="),
+#                     direction = ">="),
 #      rocr_roc(dat$x, dat$y),
-#      proc_roc(dat$x, dat$y, algo = 2),
-#      times = 20
+#      proc_roc(dat$x, dat$y),
+#      times = 100, unit = "ms"
 #  )
-#  
 #  n <- 1e6
 #  set.seed(123)
 #  dat <- data.frame(x = rnorm(n), y = sample(c(0:1), size = n, replace = TRUE))
-#  bench_1e6 <- microbenchmark::microbenchmark(unit = "ms",
+#  bench_1e6 <- microbenchmark::microbenchmark(
 #      cutpointr::roc(dat, "x", "y", pos_class = 1, neg_class = 0,
-#                direction = ">="),
+#                     direction = ">="),
 #      rocr_roc(dat$x, dat$y),
-#      times = 15
+#      proc_roc(dat$x, dat$y),
+#      times = 30, unit = "ms"
 #  )
-#  
 #  n <- 1e7
 #  set.seed(123)
 #  dat <- data.frame(x = rnorm(n), y = sample(c(0:1), size = n, replace = TRUE))
 #  bench_1e7 <- microbenchmark::microbenchmark(
 #      cutpointr::roc(dat, "x", "y", pos_class = 1, neg_class = 0,
-#                direction = ">="),
+#                     direction = ">="),
 #      rocr_roc(dat$x, dat$y),
-#      times = 10, unit = "ms"
+#      proc_roc(dat$x, dat$y),
+#      times = 30, unit = "ms"
 #  )
 #  
-#  results <- rbind(
+#  results_roc <- rbind(
+#      data.frame(time = summary(bench_100)$median,
+#                 Solution = summary(bench_100)$expr,
+#                 n = 100),
 #      data.frame(time = summary(bench_1000)$median,
-#                 solution = summary(bench_1000)$expr,
+#                 Solution = summary(bench_1000)$expr,
 #                 n = 1000),
 #      data.frame(time = summary(bench_10000)$median,
-#                 solution = summary(bench_10000)$expr,
+#                 Solution = summary(bench_10000)$expr,
 #                 n = 10000),
 #      data.frame(time = summary(bench_1e5)$median,
-#                 solution = summary(bench_1e5)$expr,
+#                 Solution = summary(bench_1e5)$expr,
 #                 n = 1e5),
 #      data.frame(time = summary(bench_1e6)$median,
-#                 solution = summary(bench_1e6)$expr,
+#                 Solution = summary(bench_1e6)$expr,
 #                 n = 1e6),
 #      data.frame(time = summary(bench_1e7)$median,
-#                 solution = summary(bench_1e7)$expr,
+#                 Solution = summary(bench_1e7)$expr,
 #                 n = 1e7)
 #  )
-#  results$solution <- as.character(results$solution)
-#  results$solution[grep(pattern = "cutpointr", x = results$solution)] <- "cutpointr"
-#  results$solution[grep(pattern = "rocr", x = results$solution)] <- "ROCR"
-#  results$solution[grep(pattern = "proc", x = results$solution)] <- "pROC"
+#  results_roc$Solution <- as.character(results_roc$Solution)
+#  results_roc$Solution[grep(pattern = "cutpointr", x = results_roc$Solution)] <- "cutpointr"
+#  results_roc$Solution[grep(pattern = "rocr", x = results_roc$Solution)] <- "ROCR"
+#  results_roc$Solution[grep(pattern = "proc", x = results_roc$Solution)] <- "pROC"
+#  results_roc$task <- "ROC curve calculation"
 
 ## ---- echo = FALSE-------------------------------------------------------
-# dput(results)
-
-results <- structure(list(time = c(1.3027925, 1.223025, 8.9053195, 2.8894935, 
-5.1902165, 81.582236, 28.598465, 59.418236, 968.2270865, 265.087399, 
-559.158593, 3218.96599, 6227.157674), solution = c("cutpointr", 
+# Our results
+results_roc <- structure(list(time = c(0.7973505, 1.732651, 0.447701, 0.859301, 
+2.0358515, 0.694802, 1.878151, 5.662151, 3.6580505, 11.099251, 
+42.8208515, 35.3293005, 159.8100505, 612.471901, 610.4337005, 
+2032.693551, 7806.3854515, 7081.897251), Solution = c("cutpointr", 
 "ROCR", "pROC", "cutpointr", "ROCR", "pROC", "cutpointr", "ROCR", 
-"pROC", "cutpointr", "ROCR", "cutpointr", "ROCR"), n = c(1000, 
-1000, 1000, 10000, 10000, 10000, 1e+05, 1e+05, 1e+05, 1e+06, 
-1e+06, 1e+07, 1e+07)), .Names = c("time", "solution", "n"), row.names = c(NA, 
--13L), class = "data.frame")
+"pROC", "cutpointr", "ROCR", "pROC", "cutpointr", "ROCR", "pROC", 
+"cutpointr", "ROCR", "pROC"), n = c(100, 100, 100, 1000, 1000, 
+1000, 10000, 10000, 10000, 1e+05, 1e+05, 1e+05, 1e+06, 1e+06, 
+1e+06, 1e+07, 1e+07, 1e+07), task = c("ROC curve calculation", 
+"ROC curve calculation", "ROC curve calculation", "ROC curve calculation", 
+"ROC curve calculation", "ROC curve calculation", "ROC curve calculation", 
+"ROC curve calculation", "ROC curve calculation", "ROC curve calculation", 
+"ROC curve calculation", "ROC curve calculation", "ROC curve calculation", 
+"ROC curve calculation", "ROC curve calculation", "ROC curve calculation", 
+"ROC curve calculation", "ROC curve calculation")), row.names = c(NA, 
+-18L), class = "data.frame")
 
 ## ---- echo = FALSE-------------------------------------------------------
-ggplot(results, aes(x = n, y = time, col = solution, shape = solution)) +
-    geom_point(size = 3) + geom_line() +
-    scale_y_log10(breaks = c(1, 5, 10, 25, 100, 250, 1000, 5000, 1e4, 15000)) +
-    scale_x_log10(breaks = c(1000, 1e4, 1e5, 1e6, 1e7)) +
-    ggtitle("Benchmark results", "n = 1000, 10000, 1e5, 1e6, 1e7") +
-    ylab("Median time (milliseconds, log scale)") + xlab("n (log scale)")
+results_all <- dplyr::bind_rows(results, results_roc)
+
+ggplot(results_all, aes(x = n, y = time, col = Solution, shape = Solution)) +
+  geom_point(size = 3) + geom_line() +
+  scale_y_log10(breaks = c(0.5, 1, 2, 3, 5, 10, 25, 100, 250, 1000, 5000, 1e4, 15000)) +
+  scale_x_log10(breaks = c(100, 1000, 1e4, 1e5, 1e6, 1e7)) +
+  ylab("Median Time (milliseconds, log scale)") + xlab("Sample Size (log scale)") +
+  theme_bw() +
+  theme(legend.position = "bottom", 
+        legend.key.width = unit(0.8, "cm"), 
+        panel.spacing = unit(1, "lines")) +
+  facet_grid(~task)
 
 ## ---- echo = FALSE-------------------------------------------------------
-res_table <- tidyr::spread(results, solution, time)
+res_table <- tidyr::spread(results_all, Solution, time) %>% 
+  arrange(task)
 knitr::kable(res_table)
 
