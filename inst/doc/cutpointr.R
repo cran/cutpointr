@@ -10,7 +10,6 @@ data(suicide)
 head(suicide)
 cp <- cutpointr(suicide, dsi, suicide, 
                 method = maximize_metric, metric = sum_sens_spec)
-cp
 
 ## ------------------------------------------------------------------------
 summary(cp)

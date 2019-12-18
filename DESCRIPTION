@@ -2,8 +2,8 @@ Package: cutpointr
 Type: Package
 Title: Determine and Evaluate Optimal Cutpoints in Binary
         Classification Tasks
-Version: 1.0.0
-Date: 2019-09-09
+Version: 1.0.1
+Date: 2019-12-16
 Authors@R: person("Christian", "Thiele", , "c.thiele@gmx-topmail.de", c("aut", "cre"))
 Description: Estimate cutpoints that optimize a specified metric in binary classification tasks
     and validate performance using bootstrapping. Some methods for more robust cutpoint
@@ -24,8 +24,8 @@ Suggests: KernSmooth (>= 2.23-15), fANCOVA (>= 0.5-1), testthat (>=
         rmarkdown, mgcv (>= 1.8), crayon (>= 1.3.4)
 VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2019-09-17 21:05:28 UTC; Khl4v
+Packaged: 2019-12-18 09:56:29 UTC; Khl4v
 Author: Christian Thiele [aut, cre]
 Maintainer: Christian Thiele <c.thiele@gmx-topmail.de>
 Repository: CRAN
-Date/Publication: 2019-09-17 21:30:02 UTC
+Date/Publication: 2019-12-18 15:00:08 UTC
