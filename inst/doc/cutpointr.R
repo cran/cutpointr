@@ -1,57 +1,80 @@
-## ---- include = FALSE----------------------------------------------------
+## ---- include = FALSE---------------------------------------------------------
 knitr::opts_chunk$set(fig.width = 6, fig.height = 5, fig.align = "center")
 
-## ----CRAN, eval = FALSE--------------------------------------------------
+## ----CRAN, eval = FALSE-------------------------------------------------------
 #  install.packages("cutpointr")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 library(cutpointr)
 data(suicide)
 head(suicide)
 cp <- cutpointr(suicide, dsi, suicide, 
                 method = maximize_metric, metric = sum_sens_spec)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 summary(cp)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 plot(cp)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 opt_cut <- cutpointr(suicide, dsi, suicide, direction = ">=", pos_class = "yes",
                      neg_class = "no", method = maximize_metric, metric = youden)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 plot_metric(opt_cut)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 predict(opt_cut, newdata = data.frame(dsi = 0:5))
 
-## ------------------------------------------------------------------------
+## ---- cache=TRUE--------------------------------------------------------------
+set.seed(12)
+opt_cut <- cutpointr(suicide, dsi, suicide, boot_runs = 1000)
+opt_cut
+
+## -----------------------------------------------------------------------------
 opt_cut$boot
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 summary(opt_cut)
 plot(opt_cut)
 
-## ------------------------------------------------------------------------
+## ---- cache=TRUE--------------------------------------------------------------
+if (suppressPackageStartupMessages(require(doParallel) & require(doRNG))) {
+  cl <- makeCluster(2) # 2 cores
+  registerDoParallel(cl)
+  registerDoRNG(12) # Reproducible parallel loops using doRNG
+  opt_cut <- cutpointr(suicide, dsi, suicide, gender, pos_class = "yes",
+                 direction = ">=", boot_runs = 1000, allowParallel = TRUE)
+  stopCluster(cl)
+  opt_cut
+}
+
+## ---- cache=TRUE--------------------------------------------------------------
+set.seed(100)
+cutpointr(suicide, dsi, suicide, gender, 
+          method = maximize_boot_metric,
+          boot_cut = 200, summary_func = mean,
+          metric = accuracy, silent = TRUE)
+
+## -----------------------------------------------------------------------------
 opt_cut <- cutpointr(suicide, dsi, suicide, gender, method = minimize_metric,
                      metric = misclassification_cost, cost_fp = 1, cost_fn = 10)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 plot_metric(opt_cut)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 opt_cut <- cutpointr(suicide, dsi, suicide, gender, 
                      method = minimize_loess_metric,
                      criterion = "aicc", family = "symmetric", 
                      degree = 2, user.span = 0.7,
                      metric = misclassification_cost, cost_fp = 1, cost_fn = 10)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 plot_metric(opt_cut)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 library(ggplot2)
 exdat <- iris
 exdat <- exdat[exdat$Species != "setosa", ]
@@ -61,34 +84,34 @@ opt_cut <- cutpointr(exdat, Petal.Length, Species,
                      metric = abs_d_sens_spec)
 plot_metric(opt_cut)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 opt_cut <- cutpointr(suicide, dsi, suicide, gender, 
                      method = minimize_spline_metric, spar = 0.4,
                      metric = misclassification_cost, cost_fp = 1, cost_fn = 10)
 plot_metric(opt_cut)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 cutpointr(suicide, dsi, suicide, gender, method = oc_youden_normal)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 cutpointr(suicide, dsi, suicide, gender, method = oc_youden_kernel)
 
-## ---- fig.width=4, fig.height=3------------------------------------------
+## ---- fig.width=4, fig.height=3-----------------------------------------------
 roc_curve <- roc(data = suicide, x = dsi, class = suicide,
     pos_class = "yes", neg_class = "no", direction = ">=")
 auc(roc_curve)
 head(roc_curve)
 plot_roc(roc_curve)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 dat <- data.frame(outcome = c("neg", "neg", "neg", "pos", "pos", "pos", "pos"),
                   pred    = c(1, 2, 3, 8, 11, 11, 12))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 opt_cut <- cutpointr(dat, x = pred, class = outcome, use_midpoints = TRUE)
 plot_x(opt_cut)
 
-## ---- echo = FALSE-------------------------------------------------------
+## ---- echo = FALSE------------------------------------------------------------
 plotdat_nomidpoints <- structure(list(sim_nr = c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 
 2L, 2L, 2L, 2L, 2L, 2L, 2L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 4L, 
 4L, 4L, 4L, 4L, 4L, 4L, 4L, 5L, 5L, 5L, 5L, 5L, 5L, 5L, 5L, 6L, 
@@ -266,7 +289,7 @@ plotdat_nomidpoints <- structure(list(sim_nr = c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
         265:272, 273:280, 281:288)), row.names = c(NA, -36L), class = c("tbl_df", 
 "tbl", "data.frame"), .drop = TRUE))
 
-## ---- echo = FALSE-------------------------------------------------------
+## ---- echo = FALSE------------------------------------------------------------
 library(dplyr)
 ggplot(plotdat_nomidpoints %>% filter(!(method %in% c("spline_20"))), 
        aes(x = n, y = mean_err, color = method, shape = method)) + 
@@ -277,7 +300,7 @@ ggplot(plotdat_nomidpoints %>% filter(!(method %in% c("spline_20"))),
     ggtitle("Bias of all methods when use_midpoints = FALSE",
             "normally distributed data, 10000 repetitions of simulation")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 opt_cut <- cutpointr(suicide, dsi, suicide, metric = sum_sens_spec, 
                      tol_metric = 0.05, break_ties = c)
 library(tidyr)
@@ -285,44 +308,63 @@ opt_cut %>%
     select(optimal_cutpoint, sum_sens_spec) %>% 
     unnest(cols = c(optimal_cutpoint, sum_sens_spec))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 set.seed(100)
 opt_cut_manual <- cutpointr(suicide, dsi, suicide, method = oc_manual, 
                        cutpoint = mean(suicide$dsi), boot_runs = 30)
 set.seed(100)
 opt_cut_mean <- cutpointr(suicide, dsi, suicide, method = oc_mean, boot_runs = 30)
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  myvar <- "dsi"
 #  cutpointr(suicide, !!myvar, suicide)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 mcp <- multi_cutpointr(suicide, class = suicide, pos_class = "yes", 
                 use_midpoints = TRUE, silent = TRUE) 
 summary(mcp)
 
-## ------------------------------------------------------------------------
+## ---- cache=TRUE--------------------------------------------------------------
+# Extracting the bootstrap results
+set.seed(123)
+opt_cut <- cutpointr(suicide, dsi, suicide, gender, boot_runs = 1000)
+
+# Using base R to summarise the result of the bootstrap
+summary(opt_cut$boot[[1]]$optimal_cutpoint)
+summary(opt_cut$boot[[2]]$optimal_cutpoint)
+
+# Using dplyr and tidyr
+library(tidyr)
+opt_cut %>% 
+  group_by(subgroup) %>% 
+  select(boot) %>% 
+  unnest(boot) %>% 
+  summarise(sd_oc_boot = sd(optimal_cutpoint),
+            m_oc_boot  = mean(optimal_cutpoint),
+            m_acc_oob  = mean(acc_oob))
+
+## -----------------------------------------------------------------------------
 cutpointr(suicide, dsi, suicide, gender, metric = youden, silent = TRUE) %>% 
     add_metric(list(ppv, npv)) %>% 
     select(subgroup, optimal_cutpoint, youden, ppv, npv)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 roc(data = suicide, x = dsi, class = suicide, pos_class = "yes",
     neg_class = "no", direction = ">=") %>% 
   add_metric(list(cohens_kappa, F1_score)) %>% 
   select(x.sorted, tp, fp, tn, fn, cohens_kappa, F1_score) %>% 
   head()
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  mean_cut <- function(data, x, ...) {
 #      oc <- mean(data[[x]])
 #      return(data.frame(optimal_cutpoint = oc))
 #  }
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 misclassification_cost
 
-## ---- fig.width=4, fig.height=3------------------------------------------
+## ---- fig.width=4, fig.height=3-----------------------------------------------
 set.seed(102)
 opt_cut <- cutpointr(suicide, dsi, suicide, gender, method = minimize_metric,
                      metric = abs_d_sens_spec, boot_runs = 200, silent = TRUE)
@@ -334,11 +376,11 @@ plot_precision_recall(opt_cut)
 plot_sensitivity_specificity(opt_cut)
 plot_roc(opt_cut)
 
-## ---- fig.width=4, fig.height=3------------------------------------------
+## ---- fig.width=4, fig.height=3-----------------------------------------------
 p <- plot_x(opt_cut)
 p + ggtitle("Distribution of dsi") + theme_minimal() + xlab("Depression score")
 
-## ---- fig.width=4, fig.height=3, cache=FALSE-----------------------------
+## ---- fig.width=4, fig.height=3, cache=FALSE----------------------------------
 set.seed(500)
 oc <- cutpointr(suicide, dsi, suicide, boot_runs = 1000, 
                 metric = sum_ppv_npv) # metric irrelevant for plot_cutpointr
@@ -346,7 +388,7 @@ plot_cutpointr(oc, xvar = cutpoints, yvar = sum_sens_spec, conf_lvl = 0.9)
 plot_cutpointr(oc, xvar = fpr, yvar = tpr, aspect_ratio = 1, conf_lvl = 0)
 plot_cutpointr(oc, xvar = cutpoint, yvar = tp, conf_lvl = 0.9) + geom_point()
 
-## ---- fig.width=4, fig.height=3, cache=FALSE-----------------------------
+## ---- fig.width=4, fig.height=3, cache=FALSE----------------------------------
 set.seed(123) 
 opt_cut <- cutpointr(suicide, dsi, suicide, gender, boot_runs = 1000)
 
@@ -356,7 +398,7 @@ opt_cut %>%
     ggplot(aes(x = suicide, y = dsi)) + 
     geom_boxplot(alpha = 0.3) + facet_grid(~subgroup)
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  # Return cutpoint that maximizes the sum of sensitivity and specificiy
 #  # ROCR package
 #  rocr_sensspec <- function(x, class) {
@@ -374,7 +416,7 @@ opt_cut %>%
 #      pROC::coords(r, "best", ret="threshold", transpose = FALSE)[1]
 #  }
 
-## ---- eval = FALSE, echo = FALSE-----------------------------------------
+## ---- eval = FALSE, echo = FALSE----------------------------------------------
 #  library(OptimalCutpoints)
 #  library(ThresholdROC)
 #  n <- 100
@@ -490,7 +532,7 @@ opt_cut %>%
 #  
 #  results$task <- "Cutpoint Estimation"
 
-## ---- echo = FALSE-------------------------------------------------------
+## ---- echo = FALSE------------------------------------------------------------
 # These are the original results on our system
 # dput(results)
 results <- structure(list(time = c(4.5018015, 1.812802, 0.662101, 2.2887015, 
@@ -514,7 +556,7 @@ results <- structure(list(time = c(4.5018015, 1.812802, 0.662101, 2.2887015,
 "Cutpoint Estimation", "Cutpoint Estimation", "Cutpoint Estimation", 
 "Cutpoint Estimation")), row.names = c(NA, -24L), class = "data.frame")
 
-## ---- eval = FALSE-------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  # ROCR package
 #  rocr_roc <- function(x, class) {
 #      pred <- ROCR::prediction(x, class)
@@ -528,7 +570,7 @@ results <- structure(list(time = c(4.5018015, 1.812802, 0.662101, 2.2887015,
 #      return(NULL)
 #  }
 
-## ---- eval = FALSE, echo = FALSE-----------------------------------------
+## ---- eval = FALSE, echo = FALSE----------------------------------------------
 #  n <- 100
 #  set.seed(123)
 #  dat <- data.frame(x = rnorm(n), y = sample(c(0:1), size = n, replace = TRUE))
@@ -616,7 +658,7 @@ results <- structure(list(time = c(4.5018015, 1.812802, 0.662101, 2.2887015,
 #  results_roc$Solution[grep(pattern = "proc", x = results_roc$Solution)] <- "pROC"
 #  results_roc$task <- "ROC curve calculation"
 
-## ---- echo = FALSE-------------------------------------------------------
+## ---- echo = FALSE------------------------------------------------------------
 # Our results
 results_roc <- structure(list(time = c(0.7973505, 1.732651, 0.447701, 0.859301, 
 2.0358515, 0.694802, 1.878151, 5.662151, 3.6580505, 11.099251, 
@@ -635,7 +677,7 @@ results_roc <- structure(list(time = c(0.7973505, 1.732651, 0.447701, 0.859301,
 "ROC curve calculation", "ROC curve calculation")), row.names = c(NA, 
 -18L), class = "data.frame")
 
-## ---- echo = FALSE-------------------------------------------------------
+## ---- echo = FALSE------------------------------------------------------------
 results_all <- dplyr::bind_rows(results, results_roc)
 
 ggplot(results_all, aes(x = n, y = time, col = Solution, shape = Solution)) +
@@ -649,7 +691,7 @@ ggplot(results_all, aes(x = n, y = time, col = Solution, shape = Solution)) +
         panel.spacing = unit(1, "lines")) +
   facet_grid(~task)
 
-## ---- echo = FALSE-------------------------------------------------------
+## ---- echo = FALSE------------------------------------------------------------
 res_table <- tidyr::spread(results_all, Solution, time) %>% 
   arrange(task)
 knitr::kable(res_table)
