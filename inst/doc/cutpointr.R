@@ -1,5 +1,7 @@
 ## ---- include = FALSE---------------------------------------------------------
 knitr::opts_chunk$set(fig.width = 6, fig.height = 5, fig.align = "center")
+options(rmarkdown.html_vignette.check_title = FALSE)
+load("vignettedata/vignettedata.Rdata")
 
 ## ----CRAN, eval = FALSE-------------------------------------------------------
 #  install.packages("cutpointr")
@@ -27,10 +29,12 @@ plot_metric(opt_cut)
 ## -----------------------------------------------------------------------------
 predict(opt_cut, newdata = data.frame(dsi = 0:5))
 
-## ---- cache=TRUE--------------------------------------------------------------
-set.seed(12)
-opt_cut <- cutpointr(suicide, dsi, suicide, boot_runs = 1000)
-opt_cut
+## ----separate subgroups and bootstrapping, eval = FALSE-----------------------
+#  set.seed(12)
+#  opt_cut_b <- cutpointr(suicide, dsi, suicide, boot_runs = 1000)
+
+## -----------------------------------------------------------------------------
+opt_cut_b
 
 ## -----------------------------------------------------------------------------
 opt_cut$boot
@@ -39,16 +43,15 @@ opt_cut$boot
 summary(opt_cut)
 plot(opt_cut)
 
-## ---- cache=TRUE--------------------------------------------------------------
-if (suppressPackageStartupMessages(require(doParallel) & require(doRNG))) {
-  cl <- makeCluster(2) # 2 cores
-  registerDoParallel(cl)
-  registerDoRNG(12) # Reproducible parallel loops using doRNG
-  opt_cut <- cutpointr(suicide, dsi, suicide, gender, pos_class = "yes",
-                 direction = ">=", boot_runs = 1000, allowParallel = TRUE)
-  stopCluster(cl)
-  opt_cut
-}
+## ---- eval = FALSE------------------------------------------------------------
+#  library(doParallel)
+#  cl <- makeCluster(2) # 2 cores
+#  registerDoParallel(cl)
+#  registerDoRNG(12) # Reproducible parallel loops using doRNG
+#  opt_cut <- cutpointr(suicide, dsi, suicide, gender, pos_class = "yes",
+#                       direction = ">=", boot_runs = 1000, allowParallel = TRUE)
+#  stopCluster(cl)
+#  opt_cut
 
 ## ---- cache=TRUE--------------------------------------------------------------
 set.seed(100)
@@ -64,7 +67,7 @@ opt_cut <- cutpointr(suicide, dsi, suicide, gender, method = minimize_metric,
 ## -----------------------------------------------------------------------------
 plot_metric(opt_cut)
 
-## -----------------------------------------------------------------------------
+## ---- message = FALSE---------------------------------------------------------
 opt_cut <- cutpointr(suicide, dsi, suicide, gender, 
                      method = minimize_loess_metric,
                      criterion = "aicc", family = "symmetric", 
@@ -308,12 +311,12 @@ opt_cut %>%
     select(optimal_cutpoint, sum_sens_spec) %>% 
     unnest(cols = c(optimal_cutpoint, sum_sens_spec))
 
-## -----------------------------------------------------------------------------
-set.seed(100)
-opt_cut_manual <- cutpointr(suicide, dsi, suicide, method = oc_manual, 
-                       cutpoint = mean(suicide$dsi), boot_runs = 30)
-set.seed(100)
-opt_cut_mean <- cutpointr(suicide, dsi, suicide, method = oc_mean, boot_runs = 30)
+## ---- eval = FALSE------------------------------------------------------------
+#  set.seed(100)
+#  opt_cut_manual <- cutpointr(suicide, dsi, suicide, method = oc_manual,
+#                         cutpoint = mean(suicide$dsi), boot_runs = 1000)
+#  set.seed(100)
+#  opt_cut_mean <- cutpointr(suicide, dsi, suicide, method = oc_mean, boot_runs = 1000)
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  myvar <- "dsi"
@@ -324,21 +327,17 @@ mcp <- multi_cutpointr(suicide, class = suicide, pos_class = "yes",
                 use_midpoints = TRUE, silent = TRUE) 
 summary(mcp)
 
-## ---- cache=TRUE--------------------------------------------------------------
-# Extracting the bootstrap results
-set.seed(123)
-opt_cut <- cutpointr(suicide, dsi, suicide, gender, boot_runs = 1000)
+## ---- eval = FALSE, message = FALSE-------------------------------------------
+#  set.seed(123)
+#  opt_cut_b_g <- cutpointr(suicide, dsi, suicide, gender, boot_runs = 1000)
 
-# Using base R to summarise the result of the bootstrap
-summary(opt_cut$boot[[1]]$optimal_cutpoint)
-summary(opt_cut$boot[[2]]$optimal_cutpoint)
-
+## ---- message = FALSE---------------------------------------------------------
 # Using dplyr and tidyr
 library(tidyr)
-opt_cut %>% 
+opt_cut_b_g %>% 
   group_by(subgroup) %>% 
-  select(boot) %>% 
-  unnest(boot) %>% 
+  select(subgroup, boot) %>%
+  unnest(cols = boot) %>% 
   summarise(sd_oc_boot = sd(optimal_cutpoint),
             m_oc_boot  = mean(optimal_cutpoint),
             m_acc_oob  = mean(acc_oob))
@@ -365,36 +364,26 @@ roc(data = suicide, x = dsi, class = suicide, pos_class = "yes",
 misclassification_cost
 
 ## ---- fig.width=4, fig.height=3-----------------------------------------------
-set.seed(102)
-opt_cut <- cutpointr(suicide, dsi, suicide, gender, method = minimize_metric,
-                     metric = abs_d_sens_spec, boot_runs = 200, silent = TRUE)
-opt_cut
-plot_cut_boot(opt_cut)
-plot_metric(opt_cut, conf_lvl = 0.9)
-plot_metric_boot(opt_cut)
-plot_precision_recall(opt_cut)
-plot_sensitivity_specificity(opt_cut)
-plot_roc(opt_cut)
+plot_cut_boot(opt_cut_b_g)
+plot_metric(opt_cut_b_g, conf_lvl = 0.9)
+plot_metric_boot(opt_cut_b_g)
+plot_precision_recall(opt_cut_b_g)
+plot_sensitivity_specificity(opt_cut_b_g)
+plot_roc(opt_cut_b_g)
 
 ## ---- fig.width=4, fig.height=3-----------------------------------------------
-p <- plot_x(opt_cut)
+p <- plot_x(opt_cut_b_g)
 p + ggtitle("Distribution of dsi") + theme_minimal() + xlab("Depression score")
 
 ## ---- fig.width=4, fig.height=3, cache=FALSE----------------------------------
-set.seed(500)
-oc <- cutpointr(suicide, dsi, suicide, boot_runs = 1000, 
-                metric = sum_ppv_npv) # metric irrelevant for plot_cutpointr
-plot_cutpointr(oc, xvar = cutpoints, yvar = sum_sens_spec, conf_lvl = 0.9)
-plot_cutpointr(oc, xvar = fpr, yvar = tpr, aspect_ratio = 1, conf_lvl = 0)
-plot_cutpointr(oc, xvar = cutpoint, yvar = tp, conf_lvl = 0.9) + geom_point()
+plot_cutpointr(opt_cut_b, xvar = cutpoints, yvar = sum_sens_spec, conf_lvl = 0.9)
+plot_cutpointr(opt_cut_b, xvar = fpr, yvar = tpr, aspect_ratio = 1, conf_lvl = 0)
+plot_cutpointr(opt_cut_b, xvar = cutpoint, yvar = tp, conf_lvl = 0.9) + geom_point()
 
-## ---- fig.width=4, fig.height=3, cache=FALSE----------------------------------
-set.seed(123) 
-opt_cut <- cutpointr(suicide, dsi, suicide, gender, boot_runs = 1000)
-
-opt_cut %>% 
+## ---- fig.width=4, fig.height=3-----------------------------------------------
+opt_cut_b_g %>% 
     select(data, subgroup) %>% 
-    unnest %>% 
+    unnest(cols = data) %>% 
     ggplot(aes(x = suicide, y = dsi)) + 
     geom_boxplot(alpha = 0.3) + facet_grid(~subgroup)
 
