@@ -520,6 +520,7 @@ cutpointr_internal <- function(x, class, subgroup, method, metric, pos_class,
                                     direction = direction, pos_class = pos_class,
                                     neg_class = neg_class, tol_metric = tol_metric,
                                     use_midpoints = use_midpoints,
+                                    boot_stratify = boot_stratify,
                                     ...)
             method_result <- check_method_cols(method_result)
             optcut <- dplyr::bind_cols(optcut, method_result)
@@ -613,6 +614,7 @@ cutpointr_internal <- function(x, class, subgroup, method, metric, pos_class,
                          metric_func = metric,
                          direction = direction, pos_class = pos_class,
                          neg_class = neg_class, tol_metric = tol_metric,
+                         boot_stratify = boot_stratify,
                          use_midpoints = use_midpoints, ...)
         optcut <- check_method_cols(optcut)
         if (length(optcut[["optimal_cutpoint"]][[1]]) > 1) {
@@ -624,9 +626,6 @@ cutpointr_internal <- function(x, class, subgroup, method, metric, pos_class,
                              x = !!predictor, class = !!outcome,
                              pos_class = pos_class, neg_class = neg_class,
                              direction = direction)
-            # roc_curve <- tidyr::nest(.data = tibble::as_tibble(roc_curve),
-            #                          roc_curve = dplyr::everything()) %>%
-            #     tibble::as_tibble()
             roc_curve <- tibble::tibble(roc_curve = list(roc_curve))
             optcut <- dplyr::bind_cols(roc_curve, tibble::as_tibble(optcut))
         } else {
@@ -734,6 +733,7 @@ cutpointr_internal <- function(x, class, subgroup, method, metric, pos_class,
                                        pos_class = pc,
                                        neg_class = neg_class,
                                        tol_metric = tol_metric,
+                                       boot_stratify = boot_stratify,
                                        use_midpoints = use_midpoints,
                                        ...)
                     optcut_b <- check_method_cols(optcut_b)
@@ -849,9 +849,10 @@ cutpointr_internal <- function(x, class, subgroup, method, metric, pos_class,
 
 #' Calculate optimal cutpoints and further statistics for multiple predictors
 #'
-#' Runs \code{cutpointr_} over multiple predictor variables. If
-#' \code{x = NULL}, \code{cutpointr_}
-#' will be run using all numeric columns in the data set as predictors except for the
+#' Runs \code{cutpointr} over multiple predictor variables. Tidyeval via
+#' \code{!!} is supported for \code{class} and \code{subgroup}. If
+#' \code{x = NULL}, \code{cutpointr} will be run using all numeric columns
+#' in the data set as predictors except for the
 #' variable in \code{class} and, if given, \code{subgroup}.
 #'
 #' The automatic determination of positive / negative classes and \code{direction}
@@ -888,12 +889,15 @@ cutpointr_internal <- function(x, class, subgroup, method, metric, pos_class,
 #' @importFrom purrr %>%
 #' @family main cutpointr functions
 #' @export
-multi_cutpointr <- function(data, x = NULL, class, subgroup,
+multi_cutpointr <- function(data, x = NULL, class, subgroup = NULL,
                             silent = FALSE, ...) {
-    # If the user assumes silent is still the fourth argument
-    if (!missing(subgroup)) {
-        subgroup_sym <- rlang::enquo(subgroup)
+    if (rlang::as_label(rlang::enquo(subgroup)) == "NULL") {
+        subgroup_lab <- "NULL"
+    } else {
+        subgroup_sym <- rlang::ensym(subgroup)
         subgroup_lab <- rlang::as_label(subgroup_sym)
+    }
+    if (subgroup_lab != "NULL") {
         if (subgroup_lab %in% c("TRUE", "FALSE", "T", "F")) {
             stop(paste("The arguments to multi_cutpointr",
                        "have changed. Please see ?multi_cutpointr"))
@@ -902,14 +906,10 @@ multi_cutpointr <- function(data, x = NULL, class, subgroup,
     class_sym <- rlang::ensym(class)
     class_lab <- rlang::as_label(class_sym)
     if (is.null(x)) x = get_numeric_cols(data, class_lab)
-    if (!missing(subgroup)) {
-        subgroup <- rlang::ensym(subgroup)
-        subgroup_lab <- rlang::as_label(subgroup)
+    if (subgroup_lab != "NULL") {
         x <- x[x != subgroup_lab]
-    } else {
-        subgroup_lab <- NULL
     }
-    if (missing(subgroup)) {
+    if (subgroup_lab == "NULL") {
         res <- purrr::map(x, function(coln) {
             if (!silent) message(paste0(coln, ":"))
             cutpointr(data, !!coln, !!class_lab, silent = silent, ...)
@@ -922,7 +922,7 @@ multi_cutpointr <- function(data, x = NULL, class, subgroup,
         })
     }
     res <- suppressWarnings(dplyr::bind_rows(res))
-    class(res) <- c("multi_cutpointr",
-                    class(res)[-which(class(res) == "cutpointr")])
+    base::class(res) <- c("multi_cutpointr",
+                          base::class(res)[-which(base::class(res) == "cutpointr")])
     return(res)
 }

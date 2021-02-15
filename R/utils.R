@@ -171,7 +171,7 @@ get_opt_ind <- function(roc_curve, oc, direction) {
     })
 }
 
-summary_sd <- function(x, round_digits = 3) {
+summary_sd <- function(x) {
     x <- unlist(x)
     s <- summary(x)[1:6]
     result <- c(s[1],
@@ -181,7 +181,70 @@ summary_sd <- function(x, round_digits = 3) {
                 s[6],
                 SD = stats::sd(x, na.rm = TRUE),
                 NAs = sum(is.na(x)))
-    round(result, round_digits)
+    return(result)
+}
+
+summary_sd_df <- function(x) {
+    x <- unlist(x)
+    s <- summary(x)[1:6]
+    result <- c(s[1],
+                stats::quantile(x, 0.05, na.rm = TRUE),
+                s[2:5],
+                stats::quantile(x, 0.95, na.rm = TRUE),
+                s[6],
+                SD = stats::sd(x, na.rm = TRUE),
+                NAs = sum(is.na(x)))
+    result <- data.frame(`Min.` = result[1],
+                         `5%` = result[2],
+                         `1st Qu.` = result[3],
+                         `Median` = result[4],
+                         `Mean` = result[5],
+                         `3rd Qu.` = result[6],
+                         `95%` = result[7],
+                         `Max.` = result[8],
+                         `SD` = result[9],
+                         `NAs` = result[10],
+                         check.names = FALSE,
+                         row.names = NULL)
+    return(result)
+}
+
+# Printing function for data.frames without returning x invisibly and with
+# row.names = FALSE
+print_df_nodat <- function (x, ..., digits = NULL, quote = FALSE, right = TRUE,
+          row.names = FALSE, max = NULL) {
+    n <- length(row.names(x))
+    if (length(x) == 0L) {
+        cat(sprintf(ngettext(n, "data frame with 0 columns and %d row",
+                             "data frame with 0 columns and %d rows"), n),
+            "\n", sep = "")
+    }
+    else if (n == 0L) {
+        print.default(names(x), quote = FALSE)
+        cat(gettext("<0 rows> (or 0-length row.names)\n"))
+    }
+    else {
+        if (is.null(max))
+            max <- getOption("max.print", 99999L)
+        if (!is.finite(max))
+            stop("invalid 'max' / getOption(\"max.print\"): ",
+                 max)
+        omit <- (n0 <- max%/%length(x)) < n
+        m <- as.matrix(format.data.frame(if (omit)
+            x[seq_len(n0), , drop = FALSE]
+            else x, digits = digits, na.encode = FALSE))
+        if (!isTRUE(row.names))
+            dimnames(m)[[1L]] <- if (isFALSE(row.names))
+                rep.int("", if (omit)
+                    n0
+                    else n)
+        else row.names
+        print(m, ..., quote = quote, right = right, max = max)
+        if (omit)
+            cat(" [ reached 'max' / getOption(\"max.print\") -- omitted",
+                n - n0, "rows ]\n")
+    }
+    invisible(x)
 }
 
 # If the output of the metric function is no named matrix with one column,
