@@ -12,7 +12,7 @@
 
 <meta name="author" content="Christian Thiele" />
 
-<meta name="date" content="2021-02-15" />
+<meta name="date" content="2021-06-29" />
 
 <title>An introduction to cutpointr</title>
 
@@ -56,7 +56,14 @@ document.addEventListener('DOMContentLoaded', function() {
     </style>
 
 
-<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
@@ -341,7 +348,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">An introduction to cutpointr</h1>
 <h4 class="author">Christian Thiele</h4>
-<h4 class="date">2021-02-15</h4>
+<h4 class="date">2021-06-29</h4>
 
 
 
@@ -779,7 +786,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb72-9"><a href="#cb72-9"></a>            <span class="dt">m_acc_oob  =</span> <span class="kw">mean</span>(acc_oob))</span></code></pre></div>
 <pre><code>## # A tibble: 2 x 4
 ##   subgroup sd_oc_boot m_oc_boot m_acc_oob
-## * &lt;chr&gt;         &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+##   &lt;chr&gt;         &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
 ## 1 female        0.766      2.17     0.880
 ## 2 male          1.51       2.92     0.806</code></pre>
 </div>
@@ -857,7 +864,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ##     colnames(misclassification_cost) &lt;- &quot;misclassification_cost&quot;
 ##     return(misclassification_cost)
 ## }
-## &lt;bytecode: 0x000000001f68f520&gt;
+## &lt;bytecode: 0x00000000247b08c0&gt;
 ## &lt;environment: namespace:cutpointr&gt;</code></pre>
 </div>
 </div>
