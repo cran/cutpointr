@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(fig.width = 6, fig.height = 5, fig.align = "center")
 options(rmarkdown.html_vignette.check_title = FALSE)
 

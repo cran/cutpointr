@@ -1,9 +1,9 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(fig.width = 6, fig.height = 5, fig.align = "center")
 options(rmarkdown.html_vignette.check_title = FALSE)
 load("vignettedata/vignettedata.Rdata")
 
-## ---- fig.width=4, fig.height=3-----------------------------------------------
+## ----fig.width=4, fig.height=3------------------------------------------------
 library(cutpointr)
 roc_curve <- roc(data = suicide, x = dsi, class = suicide,
     pos_class = "yes", neg_class = "no", direction = ">=")
@@ -16,11 +16,11 @@ mcp <- multi_cutpointr(suicide, class = suicide, pos_class = "yes",
                 use_midpoints = TRUE, silent = TRUE) 
 summary(mcp)
 
-## ---- eval = FALSE, message = FALSE-------------------------------------------
+## ----eval = FALSE, message = FALSE--------------------------------------------
 #  set.seed(123)
 #  opt_cut_b_g <- cutpointr(suicide, dsi, suicide, gender, boot_runs = 500)
 
-## ---- message = FALSE---------------------------------------------------------
+## ----message = FALSE----------------------------------------------------------
 library(dplyr)
 library(tidyr)
 opt_cut_b_g |> 

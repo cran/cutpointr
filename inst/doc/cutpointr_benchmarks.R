@@ -1,9 +1,9 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(fig.width = 6, fig.height = 5, fig.align = "center")
 options(rmarkdown.html_vignette.check_title = FALSE)
 load("vignettedata/vignettedata.Rdata")
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  # Return cutpoint that maximizes the sum of sensitivity and specificiy
 #  # ROCR package
 #  rocr_sensspec <- function(x, class) {
@@ -21,7 +21,7 @@ load("vignettedata/vignettedata.Rdata")
 #      pROC::coords(r, "best", ret="threshold", transpose = FALSE)[1]
 #  }
 
-## ---- eval = FALSE, echo = FALSE----------------------------------------------
+## ----eval = FALSE, echo = FALSE-----------------------------------------------
 #  library(OptimalCutpoints)
 #  library(ThresholdROC)
 #  library(dplyr)
@@ -138,7 +138,7 @@ load("vignettedata/vignettedata.Rdata")
 #  
 #  results$task <- "Cutpoint Estimation"
 
-## ---- echo = FALSE------------------------------------------------------------
+## ----echo = FALSE-------------------------------------------------------------
 # These are the original results on our system
 # dput(results)
 results <- structure(list(time = c(4.5018015, 1.812802, 0.662101, 2.2887015, 
@@ -162,7 +162,7 @@ results <- structure(list(time = c(4.5018015, 1.812802, 0.662101, 2.2887015,
 "Cutpoint Estimation", "Cutpoint Estimation", "Cutpoint Estimation", 
 "Cutpoint Estimation")), row.names = c(NA, -24L), class = "data.frame")
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  # ROCR package
 #  rocr_roc <- function(x, class) {
 #      pred <- ROCR::prediction(x, class)
@@ -176,7 +176,7 @@ results <- structure(list(time = c(4.5018015, 1.812802, 0.662101, 2.2887015,
 #      return(NULL)
 #  }
 
-## ---- eval = FALSE, echo = FALSE----------------------------------------------
+## ----eval = FALSE, echo = FALSE-----------------------------------------------
 #  n <- 100
 #  set.seed(123)
 #  dat <- data.frame(x = rnorm(n), y = sample(c(0:1), size = n, replace = TRUE))
@@ -264,7 +264,7 @@ results <- structure(list(time = c(4.5018015, 1.812802, 0.662101, 2.2887015,
 #  results_roc$Solution[grep(pattern = "proc", x = results_roc$Solution)] <- "pROC"
 #  results_roc$task <- "ROC curve calculation"
 
-## ---- echo = FALSE------------------------------------------------------------
+## ----echo = FALSE-------------------------------------------------------------
 # Our results
 results_roc <- structure(list(time = c(0.7973505, 1.732651, 0.447701, 0.859301, 
 2.0358515, 0.694802, 1.878151, 5.662151, 3.6580505, 11.099251, 
@@ -283,7 +283,7 @@ results_roc <- structure(list(time = c(0.7973505, 1.732651, 0.447701, 0.859301,
 "ROC curve calculation", "ROC curve calculation")), row.names = c(NA, 
 -18L), class = "data.frame")
 
-## ---- echo = FALSE------------------------------------------------------------
+## ----echo = FALSE-------------------------------------------------------------
 library(ggplot2)
 results_all <- dplyr::bind_rows(results, results_roc)
 
@@ -298,7 +298,7 @@ ggplot(results_all, aes(x = n, y = time, col = Solution, shape = Solution)) +
         panel.spacing = unit(1, "lines")) +
   facet_grid(~task)
 
-## ---- echo = FALSE------------------------------------------------------------
+## ----echo = FALSE-------------------------------------------------------------
 library(tidyr)
 res_table <- tidyr::spread(results_all, Solution, time)
 res_table <- dplyr::arrange(res_table, task)

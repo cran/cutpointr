@@ -12,7 +12,7 @@
 
 <meta name="author" content="Christian Thiele" />
 
-<meta name="date" content="2022-04-13" />
+<meta name="date" content="2024-12-10" />
 
 <title>ROC curves with cutpointr</title>
 
@@ -29,45 +29,31 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
-  }
-});
-</script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
 
 
 <style type="text/css">
-  code {
-    white-space: pre;
-  }
-  .sourceCode {
-    overflow: visible;
-  }
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -76,58 +62,57 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-  { counter-reset: source-line 0; }
+{ counter-reset: source-line 0; }
 pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
+{ position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
 div.sourceCode
-  {   }
+{ }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -136,13 +121,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -348,20 +340,27 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">ROC curves with cutpointr</h1>
 <h4 class="author">Christian Thiele</h4>
-<h4 class="date">2022-04-13</h4>
+<h4 class="date">2024-12-10</h4>
 
 
 
 <div id="calculating-only-the-roc-curve" class="section level2">
 <h2>Calculating only the ROC curve</h2>
-<p>When running <code>cutpointr</code>, a ROC curve is by default returned in the column <code>roc_curve</code>. This ROC curve can be plotted using <code>plot_roc</code>. Alternatively, if only the ROC curve is desired and no cutpoint needs to be calculated, the ROC curve can be created using <code>roc()</code> and plotted using <code>plot_cutpointr</code>. The <code>roc</code> function, unlike <code>cutpointr</code>, does not determine <code>direction</code>, <code>pos_class</code> or <code>neg_class</code> automatically.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(cutpointr)</span>
-<span id="cb1-2"><a href="#cb1-2"></a>roc_curve &lt;-<span class="st"> </span><span class="kw">roc</span>(<span class="dt">data =</span> suicide, <span class="dt">x =</span> dsi, <span class="dt">class =</span> suicide,</span>
-<span id="cb1-3"><a href="#cb1-3"></a>    <span class="dt">pos_class =</span> <span class="st">&quot;yes&quot;</span>, <span class="dt">neg_class =</span> <span class="st">&quot;no&quot;</span>, <span class="dt">direction =</span> <span class="st">&quot;&gt;=&quot;</span>)</span>
-<span id="cb1-4"><a href="#cb1-4"></a><span class="kw">auc</span>(roc_curve)</span></code></pre></div>
+<p>When running <code>cutpointr</code>, a ROC curve is by default
+returned in the column <code>roc_curve</code>. This ROC curve can be
+plotted using <code>plot_roc</code>. Alternatively, if only the ROC
+curve is desired and no cutpoint needs to be calculated, the ROC curve
+can be created using <code>roc()</code> and plotted using
+<code>plot_cutpointr</code>. The <code>roc</code> function, unlike
+<code>cutpointr</code>, does not determine <code>direction</code>,
+<code>pos_class</code> or <code>neg_class</code> automatically.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(cutpointr)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>roc_curve <span class="ot">&lt;-</span> <span class="fu">roc</span>(<span class="at">data =</span> suicide, <span class="at">x =</span> dsi, <span class="at">class =</span> suicide,</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>    <span class="at">pos_class =</span> <span class="st">&quot;yes&quot;</span>, <span class="at">neg_class =</span> <span class="st">&quot;no&quot;</span>, <span class="at">direction =</span> <span class="st">&quot;&gt;=&quot;</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">auc</span>(roc_curve)</span></code></pre></div>
 <pre><code>## [1] 0.9237791</code></pre>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">head</span>(roc_curve)</span></code></pre></div>
-<pre><code>## # A tibble: 6 x 9
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">head</span>(roc_curve)</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 9
 ##   x.sorted    tp    fp    tn    fn    tpr   tnr     fpr   fnr
 ##      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;
 ## 1      Inf     0     0   496    36 0      1     0       1    
@@ -370,16 +369,25 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 4        9     3     1   495    33 0.0833 0.998 0.00202 0.917
 ## 5        8     4     1   495    32 0.111  0.998 0.00202 0.889
 ## 6        7     7     1   495    29 0.194  0.998 0.00202 0.806</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">plot_roc</span>(roc_curve)</span></code></pre></div>
-<p><img src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">plot_roc</span>(roc_curve)</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" style="display: block; margin: auto;" /></p>
 </div>
 <div id="roc-curve-and-optimal-cutpoint-for-multiple-variables" class="section level2">
 <h2>ROC curve and optimal cutpoint for multiple variables</h2>
-<p>Alternatively, we can map the standard evaluation version <code>cutpointr</code> to the column names. If <code>direction</code> and / or <code>pos_class</code> and <code>neg_class</code> are unspecified, these parameters will automatically be determined by <strong>cutpointr</strong> so that the AUC values for all variables will be <span class="math inline">\(&gt; 0.5\)</span>.</p>
-<p>We could do this manually, e.g. using <code>purrr::map</code>, but to make this task more convenient <code>multi_cutpointr</code> can be used to achieve the same result. It maps multiple predictor columns to <code>cutpointr</code>, by default all numeric columns except for the class column.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>mcp &lt;-<span class="st"> </span><span class="kw">multi_cutpointr</span>(suicide, <span class="dt">class =</span> suicide, <span class="dt">pos_class =</span> <span class="st">&quot;yes&quot;</span>, </span>
-<span id="cb6-2"><a href="#cb6-2"></a>                <span class="dt">use_midpoints =</span> <span class="ot">TRUE</span>, <span class="dt">silent =</span> <span class="ot">TRUE</span>) </span>
-<span id="cb6-3"><a href="#cb6-3"></a><span class="kw">summary</span>(mcp)</span></code></pre></div>
+<p>Alternatively, we can map the standard evaluation version
+<code>cutpointr</code> to the column names. If <code>direction</code>
+and / or <code>pos_class</code> and <code>neg_class</code> are
+unspecified, these parameters will automatically be determined by
+<strong>cutpointr</strong> so that the AUC values for all variables will
+be <span class="math inline">\(&gt; 0.5\)</span>.</p>
+<p>We could do this manually, e.g. using <code>purrr::map</code>, but to
+make this task more convenient <code>multi_cutpointr</code> can be used
+to achieve the same result. It maps multiple predictor columns to
+<code>cutpointr</code>, by default all numeric columns except for the
+class column.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>mcp <span class="ot">&lt;-</span> <span class="fu">multi_cutpointr</span>(suicide, <span class="at">class =</span> suicide, <span class="at">pos_class =</span> <span class="st">&quot;yes&quot;</span>, </span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>                <span class="at">use_midpoints =</span> <span class="cn">TRUE</span>, <span class="at">silent =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="fu">summary</span>(mcp)</span></code></pre></div>
 <pre><code>## Method: maximize_metric 
 ## Predictor: age, dsi 
 ## Outcome: suicide 
@@ -413,20 +421,30 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ##      yes    0 0.75       4      5 4.8889       6 9.25   11 2.5498   0</code></pre>
 </div>
 <div id="accessing-data-roc_curve-and-boot" class="section level2">
-<h2>Accessing <code>data</code>, <code>roc_curve</code>, and <code>boot</code></h2>
-<p>The object returned by <code>cutpointr</code> is of the classes <code>cutpointr</code>, <code>tbl_df</code>, <code>tbl</code>, and <code>data.frame</code>. Thus, it can be handled like a usual data frame. The columns <code>data</code>, <code>roc_curve</code>, and <code>boot</code> consist of nested data frames, which means that these are list columns whose elements are data frames. They can either be accessed using <code>[</code> or by using functions from the tidyverse. If subgroups were given, the output contains one row per subgroup and the function that accesses the data should be mapped to every row or the data should be grouped by subgroup.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb8-2"><a href="#cb8-2"></a>opt_cut_b_g &lt;-<span class="st"> </span><span class="kw">cutpointr</span>(suicide, dsi, suicide, gender, <span class="dt">boot_runs =</span> <span class="dv">500</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb9-2"><a href="#cb9-2"></a><span class="kw">library</span>(tidyr)</span>
-<span id="cb9-3"><a href="#cb9-3"></a>opt_cut_b_g <span class="op">|</span><span class="er">&gt;</span><span class="st"> </span></span>
-<span id="cb9-4"><a href="#cb9-4"></a><span class="st">  </span><span class="kw">group_by</span>(subgroup) <span class="op">|</span><span class="er">&gt;</span><span class="st"> </span></span>
-<span id="cb9-5"><a href="#cb9-5"></a><span class="st">  </span><span class="kw">select</span>(subgroup, boot) <span class="op">|</span><span class="er">&gt;</span><span class="st"> </span></span>
-<span id="cb9-6"><a href="#cb9-6"></a><span class="st">  </span><span class="kw">unnest</span>(<span class="dt">cols =</span> boot) <span class="op">|</span><span class="er">&gt;</span><span class="st"> </span></span>
-<span id="cb9-7"><a href="#cb9-7"></a><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">sd_oc_boot =</span> <span class="kw">sd</span>(optimal_cutpoint),</span>
-<span id="cb9-8"><a href="#cb9-8"></a>            <span class="dt">m_oc_boot  =</span> <span class="kw">mean</span>(optimal_cutpoint),</span>
-<span id="cb9-9"><a href="#cb9-9"></a>            <span class="dt">m_acc_oob  =</span> <span class="kw">mean</span>(acc_oob))</span></code></pre></div>
-<pre><code>## # A tibble: 2 x 4
+<h2>Accessing <code>data</code>, <code>roc_curve</code>, and
+<code>boot</code></h2>
+<p>The object returned by <code>cutpointr</code> is of the classes
+<code>cutpointr</code>, <code>tbl_df</code>, <code>tbl</code>, and
+<code>data.frame</code>. Thus, it can be handled like a usual data
+frame. The columns <code>data</code>, <code>roc_curve</code>, and
+<code>boot</code> consist of nested data frames, which means that these
+are list columns whose elements are data frames. They can either be
+accessed using <code>[</code> or by using functions from the tidyverse.
+If subgroups were given, the output contains one row per subgroup and
+the function that accesses the data should be mapped to every row or the
+data should be grouped by subgroup.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>opt_cut_b_g <span class="ot">&lt;-</span> <span class="fu">cutpointr</span>(suicide, dsi, suicide, gender, <span class="at">boot_runs =</span> <span class="dv">500</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>opt_cut_b_g <span class="sc">|&gt;</span> </span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="fu">group_by</span>(subgroup) <span class="sc">|&gt;</span> </span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="fu">select</span>(subgroup, boot) <span class="sc">|&gt;</span> </span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="fu">unnest</span>(<span class="at">cols =</span> boot) <span class="sc">|&gt;</span> </span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">sd_oc_boot =</span> <span class="fu">sd</span>(optimal_cutpoint),</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>            <span class="at">m_oc_boot  =</span> <span class="fu">mean</span>(optimal_cutpoint),</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>            <span class="at">m_acc_oob  =</span> <span class="fu">mean</span>(acc_oob))</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 4
 ##   subgroup sd_oc_boot m_oc_boot m_acc_oob
 ##   &lt;chr&gt;         &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
 ## 1 female        0.766      2.17     0.880
@@ -434,22 +452,27 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="adding-metrics-to-the-result-of-cutpointr-or-roc" class="section level2">
 <h2>Adding metrics to the result of cutpointr() or roc()</h2>
-<p>By default, the output of <code>cutpointr</code> includes the optimized metric and several other metrics. The <code>add_metric</code> function adds further metrics. Here, we’re adding the negative predictive value (NPV) and the positive predictive value (PPV) at the optimal cutpoint per subgroup:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">cutpointr</span>(suicide, dsi, suicide, gender, <span class="dt">metric =</span> youden, <span class="dt">silent =</span> <span class="ot">TRUE</span>) <span class="op">|</span><span class="er">&gt;</span><span class="st"> </span></span>
-<span id="cb11-2"><a href="#cb11-2"></a><span class="st">    </span><span class="kw">add_metric</span>(<span class="kw">list</span>(ppv, npv)) <span class="op">|</span><span class="er">&gt;</span><span class="st"> </span></span>
-<span id="cb11-3"><a href="#cb11-3"></a><span class="st">    </span><span class="kw">select</span>(subgroup, optimal_cutpoint, youden, ppv, npv)</span></code></pre></div>
-<pre><code>## # A tibble: 2 x 5
+<p>By default, the output of <code>cutpointr</code> includes the
+optimized metric and several other metrics. The <code>add_metric</code>
+function adds further metrics. Here, we’re adding the negative
+predictive value (NPV) and the positive predictive value (PPV) at the
+optimal cutpoint per subgroup:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">cutpointr</span>(suicide, dsi, suicide, gender, <span class="at">metric =</span> youden, <span class="at">silent =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>    <span class="fu">add_metric</span>(<span class="fu">list</span>(ppv, npv)) <span class="sc">|&gt;</span> </span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>    <span class="fu">select</span>(subgroup, optimal_cutpoint, youden, ppv, npv)</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 5
 ##   subgroup optimal_cutpoint   youden      ppv      npv
 ##   &lt;chr&gt;               &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
 ## 1 female                  2 0.808118 0.367647 0.993827
 ## 2 male                    3 0.625106 0.259259 0.982301</code></pre>
-<p>In the same fashion, additional metric columns can be added to a <code>roc_cutpointr</code> object:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">roc</span>(<span class="dt">data =</span> suicide, <span class="dt">x =</span> dsi, <span class="dt">class =</span> suicide, <span class="dt">pos_class =</span> <span class="st">&quot;yes&quot;</span>,</span>
-<span id="cb13-2"><a href="#cb13-2"></a>    <span class="dt">neg_class =</span> <span class="st">&quot;no&quot;</span>, <span class="dt">direction =</span> <span class="st">&quot;&gt;=&quot;</span>) <span class="op">|</span><span class="er">&gt;</span><span class="st"> </span></span>
-<span id="cb13-3"><a href="#cb13-3"></a><span class="st">  </span><span class="kw">add_metric</span>(<span class="kw">list</span>(cohens_kappa, F1_score)) <span class="op">|</span><span class="er">&gt;</span><span class="st"> </span></span>
-<span id="cb13-4"><a href="#cb13-4"></a><span class="st">  </span><span class="kw">select</span>(x.sorted, tp, fp, tn, fn, cohens_kappa, F1_score) <span class="op">|</span><span class="er">&gt;</span><span class="st"> </span></span>
-<span id="cb13-5"><a href="#cb13-5"></a><span class="st">  </span><span class="kw">head</span>()</span></code></pre></div>
-<pre><code>## # A tibble: 6 x 7
+<p>In the same fashion, additional metric columns can be added to a
+<code>roc_cutpointr</code> object:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">roc</span>(<span class="at">data =</span> suicide, <span class="at">x =</span> dsi, <span class="at">class =</span> suicide, <span class="at">pos_class =</span> <span class="st">&quot;yes&quot;</span>,</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>    <span class="at">neg_class =</span> <span class="st">&quot;no&quot;</span>, <span class="at">direction =</span> <span class="st">&quot;&gt;=&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  <span class="fu">add_metric</span>(<span class="fu">list</span>(cohens_kappa, F1_score)) <span class="sc">|&gt;</span> </span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="fu">select</span>(x.sorted, tp, fp, tn, fn, cohens_kappa, F1_score) <span class="sc">|&gt;</span> </span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  <span class="fu">head</span>()</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 7
 ##   x.sorted    tp    fp    tn    fn cohens_kappa F1_score
 ##      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt;        &lt;dbl&gt;    &lt;dbl&gt;
 ## 1      Inf     0     0   496    36       0        0     
