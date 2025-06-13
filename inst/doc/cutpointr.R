@@ -4,7 +4,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 load("vignettedata/vignettedata.Rdata")
 
 ## ----CRAN, eval = FALSE-------------------------------------------------------
-#  install.packages("cutpointr")
+# install.packages("cutpointr")
 
 ## -----------------------------------------------------------------------------
 library(cutpointr)
@@ -30,8 +30,8 @@ plot_metric(opt_cut)
 predict(opt_cut, newdata = data.frame(dsi = 0:5))
 
 ## ----separate subgroups and bootstrapping, eval = FALSE-----------------------
-#  set.seed(12)
-#  opt_cut_b <- cutpointr(suicide, dsi, suicide, boot_runs = 1000)
+# set.seed(12)
+# opt_cut_b <- cutpointr(suicide, dsi, suicide, boot_runs = 1000)
 
 ## -----------------------------------------------------------------------------
 opt_cut_b
@@ -44,14 +44,14 @@ summary(opt_cut_b)
 plot(opt_cut_b)
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  library(doParallel)
-#  cl <- makeCluster(2) # 2 cores
-#  registerDoParallel(cl)
-#  registerDoRNG(12) # Reproducible parallel loops using doRNG
-#  opt_cut <- cutpointr(suicide, dsi, suicide, gender, pos_class = "yes",
-#                       direction = ">=", boot_runs = 1000, allowParallel = TRUE)
-#  stopCluster(cl)
-#  opt_cut
+# library(doParallel)
+# cl <- makeCluster(2) # 2 cores
+# registerDoParallel(cl)
+# registerDoRNG(12) # Reproducible parallel loops using doRNG
+# opt_cut <- cutpointr(suicide, dsi, suicide, gender, pos_class = "yes",
+#                      direction = ">=", boot_runs = 1000, allowParallel = TRUE)
+# stopCluster(cl)
+# opt_cut
 
 ## -----------------------------------------------------------------------------
 library(tidyr)
@@ -63,15 +63,15 @@ opt_cut |>
     unnest(cols = c(optimal_cutpoint, sum_sens_spec))
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  set.seed(100)
-#  opt_cut_manual <- cutpointr(suicide, dsi, suicide, method = oc_manual,
-#                         cutpoint = mean(suicide$dsi), boot_runs = 1000)
-#  set.seed(100)
-#  opt_cut_mean <- cutpointr(suicide, dsi, suicide, method = oc_mean, boot_runs = 1000)
+# set.seed(100)
+# opt_cut_manual <- cutpointr(suicide, dsi, suicide, method = oc_manual,
+#                        cutpoint = mean(suicide$dsi), boot_runs = 1000)
+# set.seed(100)
+# opt_cut_mean <- cutpointr(suicide, dsi, suicide, method = oc_mean, boot_runs = 1000)
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  myvar <- "dsi"
-#  cutpointr(suicide, !!myvar, suicide)
+# myvar <- "dsi"
+# cutpointr(suicide, !!myvar, suicide)
 
 ## -----------------------------------------------------------------------------
 dat <- data.frame(outcome = c("neg", "neg", "neg", "pos", "pos", "pos", "pos"),

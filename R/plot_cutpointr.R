@@ -144,46 +144,46 @@ plot_cutpointr <- function(x, xvar = cutpoint, yvar = sum_sens_spec,
         }) %>%
             dplyr::bind_rows()
         if (has_boot_results(x) & conf_lvl != 0) {
-            p <- ggplot2::ggplot(rocdat, ggplot2::aes_string(x = xvar_name,
-                                                             y = yvar_name,
-                                                             ymax = "ymax",
-                                                             ymin = "ymin",
-                                                             fill = "subgroup",
-                                                             color = "subgroup")) +
+             p <- ggplot2::ggplot(rocdat, ggplot2::aes(x = .data[[xvar_name]],
+                                                       y = .data[[yvar_name]],
+                                                       ymax = ymax,
+                                                       ymin = ymin,
+                                                       fill = "subgroup",
+                                                       color = "subgroup")) +
                 ggplot2::geom_line() +
-                ggplot2::geom_ribbon(alpha = 0.2, size = 0) +
+                ggplot2::geom_ribbon(alpha = 0.2, linewidth = 0) +
                 ggplot2::ggtitle(paste(yvar_name_plotlabel, "by", xvar_name_plotlabel),
                                  "in-sample results") +
                 ggplot2::ylab(yvar_name_plotlabel) +
-                ggplot2::xlab(xvar_name_plotlabel)
+                 ggplot2::xlab(xvar_name_plotlabel)
         } else {
-            p <- ggplot2::ggplot(rocdat, ggplot2::aes_string(x = xvar_name,
-                                                                   y = yvar_name,
-                                                                   color = "subgroup")) +
-                ggplot2::geom_line() +
-                ggplot2::ggtitle(paste(yvar_name_plotlabel, "by", xvar_name_plotlabel),
-                                 "in-sample results") +
-                ggplot2::ylab(yvar_name_plotlabel) +
-                ggplot2::xlab(xvar_name_plotlabel)
+             p <- ggplot2::ggplot(rocdat, ggplot2::aes(x = .data[[xvar_name]],
+                                                       y = .data[[yvar_name]],
+                                                       color = "subgroup")) +
+                  ggplot2::geom_line() +
+                  ggplot2::ggtitle(paste(yvar_name_plotlabel, "by", xvar_name_plotlabel),
+                                   "in-sample results") +
+                  ggplot2::ylab(yvar_name_plotlabel) +
+                  ggplot2::xlab(xvar_name_plotlabel)
         }
     } else {
         rocdat <- rocdat[[1]]
         rocdat <- rocdat[is.finite(rocdat[[yvar_name]]), ]
         rocdat <- rocdat[is.finite(rocdat[[xvar_name]]), ]
         if (has_boot_results(x) & conf_lvl != 0) {
-            p <- ggplot2::ggplot(rocdat, ggplot2::aes_string(x = xvar_name,
-                                                       y = yvar_name,
-                                                       ymax = "ymax",
-                                                       ymin = "ymin")) +
+            p <- ggplot2::ggplot(rocdat, ggplot2::aes(x = .data[[xvar_name]],
+                                                       y = .data[[yvar_name]],
+                                                       ymax = ymax,
+                                                       ymin = ymin)) +
                 ggplot2::geom_line() +
-                ggplot2::geom_ribbon(alpha = 0.2, size = 0) +
+                ggplot2::geom_ribbon(alpha = 0.2, linewidth = 0) +
                 ggplot2::ggtitle(paste(yvar_name_plotlabel, "by", xvar_name_plotlabel),
                                  "in-sample results") +
                 ggplot2::ylab(yvar_name_plotlabel) +
                 ggplot2::xlab(xvar_name_plotlabel)
         } else {
-            p <- ggplot2::ggplot(rocdat, ggplot2::aes_string(x = xvar_name,
-                                                       y = yvar_name)) +
+            p <- ggplot2::ggplot(rocdat, ggplot2::aes(x = .data[[xvar_name]],
+                                                       y = .data[[yvar_name]])) +
                 ggplot2::geom_line() +
                 ggplot2::ggtitle(paste(yvar_name_plotlabel, "by", xvar_name_plotlabel),
                                  "in-sample results") +

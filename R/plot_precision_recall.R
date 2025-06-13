@@ -48,8 +48,8 @@ plot_precision_recall <- function(x, display_cutpoint = TRUE, ...) {
         })
     }
     res_unnested <- x %>%
-        dplyr::select(dts_pr) %>%
-        tidyr::unnest(.data$roc_curve)
+        dplyr::select(tidyselect::all_of(dts_pr)) %>%
+        tidyr::unnest("roc_curve")
     res_unnested <- res_unnested[is.finite(res_unnested$x.sorted), ]
     if (!(has_column(x, "subgroup"))) {
         pr <- ggplot2::ggplot(res_unnested,

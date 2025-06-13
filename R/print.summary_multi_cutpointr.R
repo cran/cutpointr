@@ -23,8 +23,7 @@ print.summary_multi_cutpointr <- function(x, digits = 4, ...) {
         cat(paste0(rep("-", getOption("width")), collapse = ""), "\n")
 
         x$cutpointr[[i]] %>%
-            dplyr::select(.data$direction,
-                          .data$AUC) %>%
+            dplyr::select("direction", "AUC") %>%
             # round(digits = digits) %>%
             dplyr::mutate(AUC = round(AUC, digits = digits),
                           n = x$n_obs[i],
@@ -37,11 +36,11 @@ print.summary_multi_cutpointr <- function(x, digits = 4, ...) {
 
         purrr::map_df(1:length(x$cutpointr[[i]]$optimal_cutpoint[[1]]), function(j) {
             x$cutpointr[[i]] %>%
-                dplyr::select(# .data$direction,
-                              .data$optimal_cutpoint,
+                dplyr::select("optimal_cutpoint",
                               !!find_metric_name(x$cutpointr[[i]]),
-                              .data$acc, .data$sensitivity,
-                              .data$specificity) %>%
+                              "acc", 
+                              "sensitivity",
+                              "specificity") %>%
                 purrr::map_df(get_fnth, n = j)
         }) %>%
             as.data.frame %>%

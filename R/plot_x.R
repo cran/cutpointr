@@ -23,13 +23,13 @@ plot_x <- function(x, display_cutpoint = TRUE, ...) {
 
     if (!(has_column(x, "subgroup"))) {
         res_unnested <- x %>%
-            dplyr::select(.data$data) %>%
-            tidyr::unnest(.data$data)
+            dplyr::select("data") %>%
+            tidyr::unnest("data")
         transparency <- 1
 
-        if (all(na_inf_omit(unlist(dplyr::select(res_unnested, predictor))) %% 1 == 0) |
+        if (all(na_inf_omit(unlist(dplyr::select(res_unnested, !!predictor))) %% 1 == 0) |
             only_one_unique(
-                na_inf_omit(unlist(dplyr::select(res_unnested, predictor)))
+                na_inf_omit(unlist(dplyr::select(res_unnested, !!predictor)))
             )) {
             all_integer = TRUE
             dist_plot <- ggplot2::geom_bar(alpha = transparency, position = "identity")
@@ -47,7 +47,7 @@ plot_x <- function(x, display_cutpoint = TRUE, ...) {
             ggplot2::xlab("value")
         if (display_cutpoint) {
             cutpoint_dat <- x %>%
-                dplyr::select(.data$optimal_cutpoint)
+                dplyr::select("optimal_cutpoint")
             if (is.list(x$optimal_cutpoint)) {
                 cutpoint_dat <- tidyr::unnest(cols = optimal_cutpoint,
                                               data = cutpoint_dat)
@@ -60,14 +60,14 @@ plot_x <- function(x, display_cutpoint = TRUE, ...) {
     } else if (has_column(x, "subgroup")) {
         res_unnested <- x %>%
             dplyr::select("data", "subgroup") %>%
-            tidyr::unnest(.data$data)
+            tidyr::unnest("data")
         res_unnested <- dplyr::full_join(res_unnested,
                                          tibble::as_tibble(x[, c("optimal_cutpoint", "subgroup")]),
                                          by = "subgroup")
         transparency <- 0.6
-        if (all(na_inf_omit(unlist(dplyr::select(res_unnested, predictor))) %% 1 == 0) |
+        if (all(na_inf_omit(unlist(dplyr::select(res_unnested, !!predictor))) %% 1 == 0) |
             only_one_unique(
-                na_inf_omit(unlist(dplyr::select(res_unnested, predictor)))
+                na_inf_omit(unlist(dplyr::select(res_unnested, !!predictor)))
             )) {
             all_integer = TRUE
             dist_plot <- ggplot2::geom_bar(alpha = transparency, position = "identity")
@@ -88,7 +88,7 @@ plot_x <- function(x, display_cutpoint = TRUE, ...) {
             ggplot2::labs(color = "Subgroup", fill = "Subgroup")
         if (display_cutpoint) {
             cutpoint_dat <- x %>%
-                dplyr::select(.data$subgroup, .data$optimal_cutpoint)
+                dplyr::select("subgroup", "optimal_cutpoint")
             if (is.list(x$optimal_cutpoint)) {
                 cutpoint_dat <- tidyr::unnest(cols = optimal_cutpoint,
                                               data = cutpoint_dat)

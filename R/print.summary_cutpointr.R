@@ -22,7 +22,7 @@ print.summary_cutpointr <- function(x, digits = 4, boot_digits = 2, ...) {
         }
 
         tempdat <- x$cutpointr[[i]] %>%
-            dplyr::select(.data$AUC) %>%
+            dplyr::select("AUC") %>%
             round(digits = digits) %>%
             dplyr::mutate(n = x$n_obs[i],
                           n_pos = x$n_pos[i],

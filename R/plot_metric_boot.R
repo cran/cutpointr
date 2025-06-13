@@ -30,9 +30,9 @@ plot_metric_boot <- function(x, ...) {
 
     if (has_boot_results(x)) {
         res_boot_unnested <- x %>%
-            dplyr::select(dts_boot) %>%
-            dplyr::mutate(boot = prepare_bind_rows(.data$boot)) %>%
-            tidyr::unnest(.data$boot) %>%
+            dplyr::select(tidyselect::all_of(dts_boot)) %>%
+            dplyr::mutate(boot = prepare_bind_rows(boot)) %>%
+            tidyr::unnest(boot) %>%
             dplyr::select(-c("roc_curve_b", "roc_curve_oob"))
         # If multiple optimal cutpoints optimal_cutpoint is a list
         if (is.list(res_boot_unnested$optimal_cutpoint)) {

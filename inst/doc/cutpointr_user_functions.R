@@ -4,10 +4,10 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 load("vignettedata/vignettedata.Rdata")
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  mean_cut <- function(data, x, ...) {
-#      oc <- mean(data[[x]])
-#      return(data.frame(optimal_cutpoint = oc))
-#  }
+# mean_cut <- function(data, x, ...) {
+#     oc <- mean(data[[x]])
+#     return(data.frame(optimal_cutpoint = oc))
+# }
 
 ## -----------------------------------------------------------------------------
 library(cutpointr)

@@ -8,18 +8,23 @@ test_plot.cutpointr <- function(cutpointr_object) {
 }
 
 test_ggplot_functions <- function(cutpointr_object, do_plot_metric = TRUE) {
-    if (do_plot_metric) {
-        tempplot <- plot_metric(cutpointr_object)
-        expect_identical(class(tempplot), c("gg", "ggplot"))
-    }
-    tempplot2 <- plot_roc(cutpointr_object)
-    expect_identical(class(tempplot2), c("gg", "ggplot"))
-    tempplot3 <- plot_x(cutpointr_object)
-    expect_identical(class(tempplot3), c("gg", "ggplot"))
-    tempplot4 <- plot_precision_recall(cutpointr_object)
-    expect_identical(class(tempplot4), c("gg", "ggplot"))
-    tempplot5 <- plot_sensitivity_specificity(cutpointr_object)
-    expect_identical(class(tempplot5), c("gg", "ggplot"))
+     if (do_plot_metric) {
+          tempplot <- plot_metric(cutpointr_object)
+          # expect_identical(class(tempplot), c("gg", "ggplot"))
+          expect_true(ggplot2::is_ggplot(tempplot))
+     }
+     tempplot2 <- plot_roc(cutpointr_object)
+     # expect_identical(class(tempplot2), c("gg", "ggplot"))
+     expect_true(ggplot2::is_ggplot(tempplot2))
+     tempplot3 <- plot_x(cutpointr_object)
+     # expect_identical(class(tempplot3), c("gg", "ggplot"))
+     expect_true(ggplot2::is_ggplot(tempplot3))
+     tempplot4 <- plot_precision_recall(cutpointr_object)
+     # expect_identical(class(tempplot4), c("gg", "ggplot"))
+     expect_true(ggplot2::is_ggplot(tempplot4))
+     tempplot5 <- plot_sensitivity_specificity(cutpointr_object)
+     # expect_identical(class(tempplot5), c("gg", "ggplot"))
+     expect_true(ggplot2::is_ggplot(tempplot5))
 }
 
 test_that("Cutpointr standard application", {
@@ -135,7 +140,8 @@ test_that("Plotting ROC curve from roc()", {
                           y = factor(c(rep(0, 50), rep(1, 50))))
     roc_cutpointr <- cutpointr::roc(tempdat, x, y, pos_class = 1, neg_class = 0)
     tempplot <- plot_roc(roc_cutpointr)
-    expect_identical(class(tempplot), c("gg", "ggplot"))
+    # expect_identical(class(tempplot), c("gg", "ggplot"))
+    expect_true(ggplot2::is_ggplot(tempplot))
 })
 
 
@@ -875,26 +881,38 @@ test_that("same results with or without silent", {
 
 test_that("plot_cutpointr runs", {
     oc <- cutpointr(suicide, dsi, suicide)
-    expect_is(plot_cutpointr(oc), "ggplot")
-    expect_is(plot_cutpointr(oc, cutpoints, fpr), "ggplot")
-    expect_is(plot_cutpointr(oc, cutpoints, function(tp, fp, ...) tp + fp), "ggplot")
+    # expect_is(plot_cutpointr(oc), "ggplot")
+    expect_true(ggplot2::is_ggplot(plot_cutpointr(oc)))
+    # expect_is(plot_cutpointr(oc, cutpoints, fpr), "ggplot")
+    expect_true(ggplot2::is_ggplot(plot_cutpointr(oc, cutpoints, fpr)))
+    # expect_is(plot_cutpointr(oc, cutpoints, function(tp, fp, ...) tp + fp), "ggplot")
+    expect_true(ggplot2::is_ggplot(plot_cutpointr(oc, cutpoints, function(tp, fp, ...) tp + fp)))
 
     oc <- cutpointr(suicide, dsi, suicide, gender)
-    expect_is(plot_cutpointr(oc), "ggplot")
-    expect_is(plot_cutpointr(oc, cutpoints, fpr), "ggplot")
-    expect_is(plot_cutpointr(oc, cutpoints, function(tp, fp, ...) tp + fp), "ggplot")
+    # expect_is(plot_cutpointr(oc), "ggplot")
+    expect_true(ggplot2::is_ggplot(plot_cutpointr(oc)))
+    # expect_is(plot_cutpointr(oc, cutpoints, fpr), "ggplot")
+    expect_true(ggplot2::is_ggplot(plot_cutpointr(oc, cutpoints, fpr)))
+    # expect_is(plot_cutpointr(oc, cutpoints, function(tp, fp, ...) tp + fp), "ggplot")
+    expect_true(ggplot2::is_ggplot(plot_cutpointr(oc, cutpoints, function(tp, fp, ...) tp + fp)))
 
     set.seed(100)
     oc <- cutpointr(suicide, dsi, suicide, boot_runs = 5)
-    expect_is(plot_cutpointr(oc), "ggplot")
-    expect_is(plot_cutpointr(oc, cutpoints, fpr), "ggplot")
-    expect_is(plot_cutpointr(oc, cutpoints, function(tp, fp, ...) tp + fp), "ggplot")
+    # expect_is(plot_cutpointr(oc), "ggplot")
+    expect_true(ggplot2::is_ggplot(plot_cutpointr(oc)))
+    # expect_is(plot_cutpointr(oc, cutpoints, fpr), "ggplot")
+    expect_true(ggplot2::is_ggplot(plot_cutpointr(oc, cutpoints, fpr)))
+    # expect_is(plot_cutpointr(oc, cutpoints, function(tp, fp, ...) tp + fp), "ggplot")
+    expect_true(ggplot2::is_ggplot(plot_cutpointr(oc, cutpoints, function(tp, fp, ...) tp + fp)))
 
     set.seed(100)
     oc <- cutpointr(suicide, dsi, suicide, gender, boot_runs = 5)
-    expect_is(plot_cutpointr(oc), "ggplot")
-    expect_is(plot_cutpointr(oc, cutpoints, fpr), "ggplot")
-    expect_is(plot_cutpointr(oc, cutpoints, function(tp, fp, ...) tp + fp), "ggplot")
+    # expect_is(plot_cutpointr(oc), "ggplot")
+    expect_true(ggplot2::is_ggplot(plot_cutpointr(oc)))
+    # expect_is(plot_cutpointr(oc, cutpoints, fpr), "ggplot")
+    expect_true(ggplot2::is_ggplot(plot_cutpointr(oc, cutpoints, fpr)))
+    # expect_is(plot_cutpointr(oc, cutpoints, function(tp, fp, ...) tp + fp), "ggplot")
+    expect_true(ggplot2::is_ggplot(plot_cutpointr(oc, cutpoints, function(tp, fp, ...) tp + fp)))
 
     set.seed(100)
     expect_warning(plot_cutpointr(
@@ -904,6 +922,11 @@ test_that("plot_cutpointr runs", {
     expect_warning(plot_cutpointr(
         cutpointr(suicide, dsi, suicide, gender, boot_runs = 5), fpr, tpr
     ))
+    
+    opt_cut_b <- cutpointr(suicide, dsi, suicide, boot_runs = 5)
+    p <- plot_cutpointr(opt_cut_b, xvar = cutpoints, 
+                        yvar = sum_sens_spec, conf_lvl = 0.9)
+    expect_true(ggplot2::is_ggplot(p))
 })
 
 test_that("gam smoothing leads to plausible results", {

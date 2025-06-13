@@ -32,23 +32,23 @@ plot_metric <- function(x, conf_lvl = 0.95, add_unsmoothed = TRUE) {
             roc_b_unnested <- x %>%
                 dplyr::select(c("boot", "subgroup")) %>%
                 dplyr::mutate(boot = prepare_bind_rows(.data$boot)) %>%
-                tidyr::unnest(.data$boot) %>%
+                tidyr::unnest("boot") %>%
                 dplyr::select(c("subgroup", "roc_curve_b")) %>%
-                tidyr::unnest(.data$roc_curve_b)
+                tidyr::unnest("roc_curve_b")
             roc_b_unnested <- roc_b_unnested[is.finite(roc_b_unnested$x.sorted), ]
             roc_b_unnested <- roc_b_unnested %>%
                 dplyr::select(c("x.sorted", "m", "subgroup")) %>%
-                dplyr::group_by(.data$x.sorted, .data$subgroup) %>%
+                dplyr::group_by(x.sorted, subgroup) %>%
                 dplyr::summarise(ymin = stats::quantile(.data$m, (1 - conf_lvl) / 2, na.rm = TRUE),
                                  ymax = stats::quantile(.data$m, 1 - (1 - conf_lvl) / 2, na.rm = TRUE))
         } else {
             # No subgroups, but bootstrap
             roc_b_unnested <- x[["boot"]][[1]] %>%
-                tidyr::unnest(.data$roc_curve_b)
+                tidyr::unnest("roc_curve_b")
             roc_b_unnested <- roc_b_unnested[is.finite(roc_b_unnested$x.sorted), ]
             roc_b_unnested <- roc_b_unnested %>%
                 dplyr::select(c("x.sorted", "m")) %>%
-                dplyr::group_by(.data$x.sorted) %>%
+                dplyr::group_by(x.sorted) %>%
                 dplyr::summarise(ymin = stats::quantile(.data$m, (1 - conf_lvl) / 2, na.rm = TRUE),
                                  ymax = stats::quantile(.data$m, 1 - (1 - conf_lvl) / 2, na.rm = TRUE))
         }
@@ -57,7 +57,7 @@ plot_metric <- function(x, conf_lvl = 0.95, add_unsmoothed = TRUE) {
     if ("subgroup" %in% colnames(x)) {
         res_unnested <- x %>%
             dplyr::select(c("roc_curve", "subgroup")) %>%
-            tidyr::unnest(.data$roc_curve)
+            tidyr::unnest("roc_curve")
         res_unnested <- res_unnested[is.finite(res_unnested$x.sorted), ]
         if (has_boot_results(x) & conf_lvl != 0) {
             res_unnested <- merge(res_unnested,
@@ -90,8 +90,8 @@ plot_metric <- function(x, conf_lvl = 0.95, add_unsmoothed = TRUE) {
     } else {
         # No subgroups
         res_unnested <- x %>%
-            dplyr::select(.data$roc_curve) %>%
-            tidyr::unnest(.data$roc_curve)
+            dplyr::select("roc_curve") %>%
+            tidyr::unnest("roc_curve")
         res_unnested <- res_unnested[is.finite(res_unnested$x.sorted), ]
         if (has_boot_results(x) & conf_lvl != 0) {
             res_unnested <- merge(res_unnested,
@@ -103,7 +103,7 @@ plot_metric <- function(x, conf_lvl = 0.95, add_unsmoothed = TRUE) {
                                                             ymin = ymin)) +
                 ggplot2::geom_line() + ggplot2::geom_point() +
                 ggplot2::ylab(metric_name) + ggplot2::xlab("Cutpoint") +
-                ggplot2::geom_ribbon(alpha = 0.2, size = 0)
+                ggplot2::geom_ribbon(alpha = 0.2, linewidth = 0)
         } else {
             p <- ggplot2::ggplot(res_unnested, ggplot2::aes(x = x.sorted,
                                                             y = m)) +

@@ -52,8 +52,8 @@ plot_roc.cutpointr <- function(x, display_cutpoint = TRUE, type = "line", ...) {
         })
     }
     res_unnested <- x %>%
-        dplyr::select(dts_roc) %>%
-        tidyr::unnest(.data$roc_curve)
+        dplyr::select(tidyselect::all_of(dts_roc)) %>%
+        tidyr::unnest("roc_curve")
     if (!(has_column(x, "subgroup"))) {
         roc <- ggplot2::ggplot(res_unnested,
                                ggplot2::aes(x = 1 - tnr, y = tpr)) +

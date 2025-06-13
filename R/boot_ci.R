@@ -48,8 +48,8 @@ boot_ci <- function(x, variable, in_bag = TRUE, alpha = 0.05) {
         }
         variable <- paste0(variable, suffix)
         variable <- x %>%
-            dplyr::select(.data$boot) %>%
-            tidyr::unnest(cols = .data$boot) %>%
+            dplyr::select("boot") %>%
+            tidyr::unnest(cols = "boot") %>%
             dplyr::pull(variable) %>%
             unlist()
         values <- stats::quantile(variable, probs = c(alpha / 2, 1 - alpha / 2),

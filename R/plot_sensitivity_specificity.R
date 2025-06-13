@@ -35,8 +35,8 @@ plot_sensitivity_specificity <- function(x, display_cutpoint = TRUE, ...) {
                           Specificity = tn / (tn + fp))
     }
     res_unnested <- x %>%
-        dplyr::select(dts_pr) %>%
-        tidyr::unnest(.data$roc_curve)
+        dplyr::select(tidyselect::all_of(dts_pr)) %>%
+        tidyr::unnest("roc_curve")
     res_unnested <- res_unnested[is.finite(res_unnested$x.sorted), ]
     res_unnested <- tidyr::gather(res_unnested, key = "metric", value = "value",
                                   Sensitivity, Specificity)
@@ -57,7 +57,7 @@ plot_sensitivity_specificity <- function(x, display_cutpoint = TRUE, ...) {
     if (display_cutpoint) {
         if (!(has_column(x, "subgroup"))) {
             res_cutpoints <- x %>%
-                dplyr::select(.data$optimal_cutpoint)
+                dplyr::select("optimal_cutpoint")
             if (is.list(res_cutpoints$optimal_cutpoint)) {
                 res_cutpoints <- tidyr::unnest(res_cutpoints)
             }
@@ -66,7 +66,7 @@ plot_sensitivity_specificity <- function(x, display_cutpoint = TRUE, ...) {
                                     ggplot2::aes(xintercept = optimal_cutpoint))
         } else {
             res_cutpoints <- x %>%
-                dplyr::select(.data$optimal_cutpoint, .data$subgroup)
+                dplyr::select("optimal_cutpoint", "subgroup")
             if (is.list(res_cutpoints$optimal_cutpoint)) {
                 res_cutpoints <- tidyr::unnest(res_cutpoints)
             }

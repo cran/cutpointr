@@ -111,15 +111,15 @@ boot_test <- function(x, y = NULL, variable = "AUC", in_bag = TRUE,
         test_res <- purrr::map2_dfr(.x = combs$var1, .y = combs$var2,
                                     .f = function(var1, var2) {
             dat_var1 <- x %>%
-                dplyr::filter(.data$subgroup == var1) %>%
-                dplyr::select(.data$boot) %>%
-                tidyr::unnest(.data$boot) %>%
+                dplyr::filter(subgroup == var1) %>%
+                dplyr::select("boot") %>%
+                tidyr::unnest("boot") %>%
                 dplyr::select(paste0(variable, suffix)) %>%
                 unlist
             dat_var2 <- x %>%
-                dplyr::filter(.data$subgroup == var2) %>%
-                dplyr::select(.data$boot) %>%
-                tidyr::unnest(.data$boot) %>%
+                dplyr::filter(subgroup == var2) %>%
+                dplyr::select("boot") %>%
+                tidyr::unnest("boot") %>%
                 dplyr::select(paste0(variable, suffix)) %>%
                 unlist
             na_v1 <- sum(is.na(dat_var1))
@@ -132,12 +132,12 @@ boot_test <- function(x, y = NULL, variable = "AUC", in_bag = TRUE,
             }
             sdt <- stats::sd(dat_var1 - dat_var2, na.rm = TRUE)
             t1 <- x %>%
-                dplyr::filter(.data$subgroup == var1) %>%
-                dplyr::select(variable) %>%
+                dplyr::filter(subgroup == var1) %>%
+                dplyr::select(tidyselect::all_of(variable)) %>%
                 unlist
             t2 <- x %>%
-                dplyr::filter(.data$subgroup == var2) %>%
-                dplyr::select(variable) %>%
+                dplyr::filter(subgroup == var2) %>%
+                dplyr::select(tidyselect::all_of(variable)) %>%
                 unlist
             z <- (t1 - t2) / sdt
             if (t1 - t2 == 0 & is.nan(sdt)) z  <- 0
@@ -164,13 +164,13 @@ boot_test <- function(x, y = NULL, variable = "AUC", in_bag = TRUE,
                        "contain subgroups."))
         }
         dat_var1 <- x %>%
-            dplyr::select(.data$boot) %>%
-            tidyr::unnest(.data$boot) %>%
+            dplyr::select("boot") %>%
+            tidyr::unnest("boot") %>%
             dplyr::select(paste0(variable, suffix)) %>%
             unlist
         dat_var2 <- y %>%
-            dplyr::select(.data$boot) %>%
-            tidyr::unnest(.data$boot) %>%
+            dplyr::select("boot") %>%
+            tidyr::unnest("boot") %>%
             dplyr::select(paste0(variable, suffix)) %>%
             unlist
         if (length(dat_var1) != length(dat_var2)) {
@@ -190,10 +190,10 @@ boot_test <- function(x, y = NULL, variable = "AUC", in_bag = TRUE,
         }
         sdt <- stats::sd(dat_var1 - dat_var2, na.rm = TRUE)
         t1 <- x %>%
-            dplyr::select(variable) %>%
+            dplyr::select(tidyselect::all_of(variable)) %>%
             unlist
         t2 <- y %>%
-            dplyr::select(variable) %>%
+            dplyr::select(tidyselect::all_of(variable)) %>%
             unlist
         z <- (t1 - t2) / sdt
         if (t1 - t2 == 0 & sdt == 0) z  <- 0

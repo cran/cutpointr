@@ -32,9 +32,9 @@ plot_cut_boot <- function(x, ...) {
 
     if (has_boot_results(x)) {
         res_boot_unnested <- x %>%
-            dplyr::select(dts_boot) %>%
-            dplyr::mutate(boot = prepare_bind_rows(.data$boot)) %>%
-            tidyr::unnest(.data$boot)
+            dplyr::select(tidyselect::all_of(dts_boot)) %>%
+            dplyr::mutate(boot = prepare_bind_rows(boot)) %>%
+            tidyr::unnest("boot")
         cutpoints <- unlist(res_boot_unnested$optimal_cutpoint)
         if (all(na_inf_omit(cutpoints %% 1 == 0)) |
             only_one_unique(na_inf_omit(cutpoints))) {
@@ -52,9 +52,10 @@ plot_cut_boot <- function(x, ...) {
                 tidyr::unnest()
         }
         boot_cut <- suppressMessages(
-            ggplot2::ggplot(res_boot_unnested,
-                            ggplot2::aes_string(x = "optimal_cutpoint",
-                                                fill = fll, color = clr)) +
+             ggplot2::ggplot(res_boot_unnested,
+                             ggplot2::aes(x = optimal_cutpoint,
+                                          fill = fll, 
+                                          color = clr)) +
                 dist_plot +
                 ggplot2::ggtitle("Bootstrap", "distribution of optimal cutpoints") +
                 ggplot2::xlab("optimal cutpoint")

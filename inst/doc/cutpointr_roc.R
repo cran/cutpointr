@@ -17,8 +17,8 @@ mcp <- multi_cutpointr(suicide, class = suicide, pos_class = "yes",
 summary(mcp)
 
 ## ----eval = FALSE, message = FALSE--------------------------------------------
-#  set.seed(123)
-#  opt_cut_b_g <- cutpointr(suicide, dsi, suicide, gender, boot_runs = 500)
+# set.seed(123)
+# opt_cut_b_g <- cutpointr(suicide, dsi, suicide, gender, boot_runs = 500)
 
 ## ----message = FALSE----------------------------------------------------------
 library(dplyr)
